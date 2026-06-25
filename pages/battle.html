@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>战斗界面 | Solo Idle Saga</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/battle.css">
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="history.back()">← 返回首页</button>
+        <div class="battle-header">
+            <h2>⚔️ 自动战斗挂机</h2>
+            <div class="battle-status">
+                <span id="stageInfo"></span>
+                <span style="margin-left:12px" id="waveInfo"></span>
+            </div>
+        </div>
+
+        <div class="battle-area">
+            <h3>你的角色</h3>
+            <div class="hp-bar-wrap">
+                <div id="playerHpBar" class="hp-bar" style="width:100%"></div>
+            </div>
+
+            <div style="margin:30px 0;">VS</div>
+
+            <h3 id="monsterName">等待战斗开始...</h3>
+            <div class="hp-bar-wrap">
+                <div id="monsterHpBar" class="hp-bar"></div>
+            </div>
+        </div>
+
+        <div class="battle-control">
+            <button id="startBattleBtn" class="battle-btn start-btn">开始挂机战斗</button>
+            <button id="stopBattleBtn" class="battle-btn stop-btn">停止战斗</button>
+        </div>
+
+        <div class="log-wrap">
+            <div class="log-box">
+                <h4>⚔️ 战斗攻击日志</h4>
+                <div id="battleLog"></div>
+            </div>
+            <div class="log-box">
+                <h4>📦 装备掉落日志</h4>
+                <div id="dropLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/pages/battlePage.js"></script>
+</body>
+</html>

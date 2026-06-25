@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色装备 | Solo Idle Saga</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/character.css">
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="history.back()">← 返回首页</button>
+        <h2>👤 角色属性 & 装备背包</h2>
+
+        <div class="wrap-row">
+            <!-- 角色总属性面板 -->
+            <div class="attr-panel">
+                <h3>角色总属性</h3>
+                <div id="attrWrap"></div>
+            </div>
+
+            <!-- 装备穿戴栏 -->
+            <div class="equip-panel">
+                <h3>装备穿戴栏</h3>
+                <div class="equip-grid" id="equipGrid">
+                    <div class="equip-slot" data-pos="weapon">武器</div>
+                    <div class="equip-slot" data-pos="helmet">头盔</div>
+                    <div class="equip-slot" data-pos="armor">护甲</div>
+                    <div class="equip-slot" data-pos="boot">靴子</div>
+                    <div class="equip-slot" data-pos="ring">戒指</div>
+                    <div class="equip-slot" data-pos="necklace">项链</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 背包区域 -->
+        <div class="bag-panel">
+            <h3>背包 <span id="bagCount"></span></h3>
+            <div class="bag-grid" id="bagGrid"></div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/pages/characterPage.js"></script>
+</body>
+</html>
