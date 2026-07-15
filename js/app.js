@@ -1,513 +1,278 @@
-import {getSaveData,setSaveData,initLocalSave,calcOfflineReward,claimOfflineReward,updateOfflineTime} from "./core/saveManager.js";
-import {calcTotalAttr} from "./core/attrCalculator.js";
-import {initBattleCallback,startBattleLoop,stopBattleLoop,clearBattleLog,getPlayerCurrentHp,getCurrentMonster} from "./core/battleEngine.js";
-import {loginAccount,getLocalCloudAccount,getCloudSlots,uploadSaveToSlot,downloadSaveFromSlot,logoutAccount} from "./core/cloudSave.js";
-import {POSITION_NAME} from "./config/gameConfig.js";
+// 兜底3秒强制关闭loading
+//setTimeout(() => {
+//    const loadingMask = document.getElementById('loadingMask');
+//    const mainWrap = document.getElementById('mainWrap');
+//    if (loadingMask) loadingMask.style.display = 'none';
+//    if (mainWrap) mainWrap.style.display = 'block';
+//}, 3000);
 
-// ================= 全局变量 =================
+// ===== 模板加载系统：从 pages/ 加载面板 HTML =====
+const PANEL_NAMES = ['town', 'character', 'battle', 'skill', 'challenge', 'forge'];
+
+async function loadPanelTemplate(name) {
+    const container = document.querySelector(`[data-template="${name}"]`);
+    if (!container) return;
+    try {
+        const response = await fetch(`pages/${name}.html`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const html = await response.text();
+        container.innerHTML = html;
+    } catch (err) {
+        console.warn(`面板 "${name}" 加载失败，使用默认占位:`, err.message);
+        container.innerHTML = `<h2 style="color:#ffd700;font-size:22px;">${name}</h2><p style="color:#94a3b8;text-align:center;padding:40px 0;">加载中...</p>`;
+    }
+}
+
+async function loadAllTemplates() {
+    await Promise.all(PANEL_NAMES.map(loadPanelTemplate));
+}
+
 let currentTab = "battle";
-let battleTimer = null;
-let bagRefreshTimer = null;
-let cloudAccountInfo = null;
-let currentSelectSlot = 0;
 // 批量销毁用户筛选记忆
 let batchFilterCache = JSON.parse(localStorage.getItem("batch_destroy_filter")) || {
     minIlvl: 1,
     maxIlvl: 10,
     qualityList: []
 };
-// 品质映射（名称+样式类+显示文字颜色）
-const QUALITY_MAP = [
-    {key:"普通", className:"rarity-normal", label:"普通(灰色)"},
-    {key:"优秀", className:"rarity-fine", label:"优秀(绿色)"},
-    {key:"稀有", className:"rarity-rare", label:"稀有(蓝色)"},
-    {key:"史诗", className:"rarity-epic", label:"史诗(紫色)"},
-    {key:"传说", className:"rarity-legend", label:"传说(橙色)"},
-    {key:"神话", className:"rarity-myth", label:"神话(红色)"},
-    {key:"至臻", className:"rarity-cosmic", label:"至臻(金色)"}
-];
 
-// 战斗DOM
-const stageInfoDom = document.getElementById("stageInfo");
-const waveInfoDom = document.getElementById("waveInfo");
-const playerHpBar = document.getElementById("playerHpBar");
-const monsterNameDom = document.getElementById("monsterName");
-const monsterHpBar = document.getElementById("monsterHpBar");
-const battleLogDom = document.getElementById("battleLog");
-const dropLogDom = document.getElementById("dropLog");
-const startBattleBtn = document.getElementById("startBattleBtn");
-const stopBattleBtn = document.getElementById("stopBattleBtn");
+// 实现getRarityClass函数
+window.getRarityClass = function(rarityName) {
+    const quality = window.RARITY_CONFIG.find(item => item.name  === rarityName);
+    return quality ? quality.className : "rarity-normal";
+};
 
-// 角色背包DOM
-const attrWrap = document.getElementById("attrWrap");
-const equipGrid = document.getElementById("equipGrid");
-const bagGrid = document.getElementById("bagGrid");
-const bagCountDom = document.getElementById("bagCount");
+// 全局局部刷新面板（调用各模块中的渲染函数）
+window.refreshCharacterPanel = function () {
+    if (typeof renderAttrPanel === 'function') renderAttrPanel();
+    if (typeof renderEquipSlots === 'function') renderEquipSlots();
+    if (typeof renderBagList === 'function') renderBagList();
+    if (typeof renderBattleLog === 'function') renderBattleLog();
+    if (typeof renderDropLog === 'function') renderDropLog();
+    if (typeof renderBattleHpUI === 'function') renderBattleHpUI();
+    if (typeof updateTownGoldDisplay === 'function') updateTownGoldDisplay();
+};
 
-// 云存档DOM
-const loginShowDom = document.getElementById("loginShow");
-const saveSlotSelect = document.getElementById("saveSlotSelect");
-const uploadSaveBtn = document.getElementById("uploadSaveBtn");
-const downloadSaveBtn = document.getElementById("downloadSaveBtn");
-const lastCloudSaveTimeDom = document.getElementById("lastCloudSaveTime");
-const loginModal = document.getElementById("loginModal");
-const accInput = document.getElementById("accInput");
-const pwdInput = document.getElementById("pwdInput");
-const loginSubmitBtn = document.getElementById("loginSubmit");
+// 等待DOM全部加载完成 + 面板模板加载完成再执行事件绑定
+document.addEventListener('DOMContentLoaded', async function () {
+    // 先加载所有面板模板
+    await loadAllTemplates();
 
+    // 1. 编辑弹窗按钮绑定
+    const editBtn = document.getElementById('editProfileBtn');
+    const editModal = document.getElementById('accountEditModal');
+    const closeEditBtn = document.getElementById('closeEditModal');
+    const saveNicknameBtn = document.getElementById('saveNicknameBtn');
+    const resetSaveBtn = document.getElementById('resetSaveBtn');
+    const logoutEditBtn = document.getElementById('logoutFromEditBtn');
 
+    document.querySelectorAll('#editProfileBtn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const save = getSaveData();
+            const nickInput = document.getElementById('editNickname');
+            const emailDisplay = document.getElementById('editEmailDisplay');
+            const saveTimeDisplay = document.getElementById('editLastSaveTime');
+            if (nickInput) nickInput.value = save.nickname || '';
+            if (emailDisplay) emailDisplay.innerText = currentUser ? currentUser.email : '未登录';
+            editModal.style.display = 'flex';
+        });
+    });
 
+    if (closeEditBtn && editModal) {
+        closeEditBtn.addEventListener('click', function () {
+            editModal.style.display = 'none';
+        });
+        editModal.addEventListener('click', function (e) {
+            if (e.target === editModal) editModal.style.display = 'none';
+        });
+    }
 
-// ================= 初始化 =================
-initLocalSave();
-bindTabEvent();
-bindCloudEvent();
-bindBattleEvent();
-initBattleCallback(onBattleUpdate);
-checkOfflineReward();
-refreshCloudUI();
-// 背包每秒轮询刷新
-bagRefreshTimer = setInterval(refreshCharacterPanel,1000);
+    if (saveNicknameBtn) {
+        saveNicknameBtn.addEventListener('click', function () {
+            const nickInput = document.getElementById('editNickname');
+            if (!nickInput) return;
+            const newNick = nickInput.value.trim();
+            if (newNick.length > 16) {
+                alert('昵称不能超过16个字符');
+                return;
+            }
+            const save = getSaveData();
+            save.nickname = newNick;
+            setSaveData(save);
+            updateAccountDisplay();
+            if (editModal) editModal.style.display = 'none';
+            alert('昵称已保存');
+        });
+    }
 
-// 页面关闭保存离线时间
-window.addEventListener("beforeunload",()=>{
-    updateOfflineTime();
-    if(battleTimer) clearInterval(battleTimer);
-    if(bagRefreshTimer) clearInterval(bagRefreshTimer);
+    if (resetSaveBtn) {
+        resetSaveBtn.addEventListener('click', async function () {
+            if (!confirm('确定要重置存档吗？云端与本地数据全部清空，操作不可恢复！')) return;
+            const loginOk = await checkLogin();
+            if (!loginOk) return;
+            if (!supabaseClient) {
+            alert('云服务不可用，无法重置云端存档');
+            return;
+            }
+            const { error } = await supabaseClient
+                .from('game_save')
+                .delete()
+                .eq('user_id', currentUser.id);
+            if (error) {
+                alert('重置云端存档失败：' + error.message);
+                return;
+            }
+            const defaultSave = getDefaultSaveData();
+            setSaveData(defaultSave);
+            document.getElementById('editLastSaveTime').innerText = '无';
+            if (editModal) editModal.style.display = 'none';
+            alert('存档重置完成，页面即将刷新');
+            location.reload();
+        });
+    }
+
+    if (logoutEditBtn) {
+    logoutEditBtn.addEventListener('click', async function () {
+        if (!confirm('确定要退出当前登录账号吗？')) return;
+        if (autoSaveTimer) clearInterval(autoSaveTimer);
+        const save = getSaveData();
+        if(save.isBattleRunning && typeof stopBattleLoop === 'function'){
+            stopBattleLoop();
+        }
+        updateOfflineTime();
+        // ★ 新增：仅当 supabaseClient 存在时才调用登出
+        if (supabaseClient) {
+            await supabaseClient.auth.signOut();
+        }
+        currentUser = null;
+        location.reload();
+    });
+}
+
+    // 2. 页面初始化：加载云端存档时间 + 自动拉取登录用户存档
+    (async function initPage() {
+        await initCloudSaveTime();
+        await autoLoadCloudSaveAfterLogin();
+    })();
+
+    // 3. 底部导航模块切换绑定
+    const navModules = document.querySelectorAll('.nav-module');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    navModules.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const targetModule = this.dataset.module;
+            currentTab = targetModule;
+            navModules.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            tabPanels.forEach(p => p.classList.remove('active'));
+            document.getElementById(`tab-${targetModule}`).classList.add('active');
+            // ★ 切换至城镇时更新金币显示
+            if (targetModule === 'town' && typeof updateTownGoldDisplay === 'function') {
+                updateTownGoldDisplay();
+            }
+            // ★ 切换模块时更新全局背景
+            if (typeof updateGameBackground === 'function') {
+                updateGameBackground();
+            }
+            // ★ 统一刷新面板内容（角色属性、装备、背包、日志、战斗血条等）
+            if (typeof refreshCharacterPanel === 'function') {
+                refreshCharacterPanel();
+            }
+        });
+    });
+
+    // 4. 初始化各业务模块
+    if (typeof initCharacterModule === 'function') initCharacterModule();
+    if (typeof initBattleModule === 'function') initBattleModule();
+    if (typeof initTownModule === 'function') initTownModule();
+    if (typeof initForgeModule === 'function') initForgeModule();
+    if (typeof initSkillModule === 'function') initSkillModule();
+    if (typeof initChallengeModule === 'function') initChallengeModule();
+
+    function adjustContainerSize() {
+        const mainWrap = document.getElementById('mainWrap');
+        if (!mainWrap) return;
+        const ww = window.innerWidth;
+        if (ww < 640) {
+            // 窄屏：让 CSS 的 height:100vh 生效，移除内联样式
+            mainWrap.style.height = '';
+        }
+        // 宽屏：CSS 已经用媒体查询设置了 720px，不需要 JS 干预
+    }
+
+    // 绑定 resize 事件
+    window.addEventListener('resize', adjustContainerSize);
+
+    // 5. 强制最少展示1000ms loading
+    const loadingMask = document.getElementById('loadingMask');
+    const mainWrap = document.getElementById('mainWrap');
+    setTimeout(() => {
+        if (loadingMask) loadingMask.style.display = 'none';
+        if (mainWrap) mainWrap.style.display = 'block';
+        adjustContainerSize();
+        // ★ 初始化后设置正确背景
+        if (typeof updateGameBackground === 'function') {
+            updateGameBackground();
+        }
+    }, 1000);
 });
 
-// ================= Tab切换 =================
-function bindTabEvent(){
-    document.querySelectorAll(".tab-btn").forEach(btn=>{
-        btn.addEventListener("click",()=>{
-            const tab = btn.dataset.tab;
-            currentTab = tab;
-            document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-            btn.classList.add("active");
-            document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
-            document.getElementById(`tab-${tab}`).classList.add("active");
-        });
-    });
-}
+// ========== 全局背景切换函数 ==========
+function updateGameBackground() {
+    const bgEl = document.getElementById('gameBackground');
+    if (!bgEl) return;
 
-// ================= 云存档绑定 =================
-function bindCloudEvent(){
-    cloudAccountInfo = getLocalCloudAccount();
-    if(!cloudAccountInfo){
-        loginModal.style.display = "flex";
-    }else{
-        loginShowDom.textContent = `账号：${cloudAccountInfo.account}`;
-        renderLastSaveTime();
-    }
+    const currentModule = getCurrentActiveModule(); // 需要实现：获取当前激活的模块名
+    const playerLevel = getPlayerLevel();           // 需要实现：从存档获取当前关卡数
+    
+    let bgImageUrl = 'assets/images/backgrounds/default-bg.jpg'; // 默认背景
 
-    // 登录
-    loginSubmitBtn.onclick = ()=>{
-        const acc = accInput.value.trim();
-        const pwd = pwdInput.value.trim();
-        if(!acc||!pwd){
-            alert("账号密码不能为空");
-            return;
-        }
-        const res = loginAccount(acc,pwd);
-        if(res.success){
-            cloudAccountInfo = getLocalCloudAccount();
-            loginShowDom.textContent = `账号：${acc}`;
-            loginModal.style.display = "none";
-            alert("登录成功");
-            renderLastSaveTime();
-        }else{
-            alert(res.msg);
-        }
-    };
-
-    // 存档下拉切换
-    saveSlotSelect.onchange = ()=>{
-        currentSelectSlot = parseInt(saveSlotSelect.value);
-        renderLastSaveTime();
-    };
-
-    // 上传存档
-    uploadSaveBtn.onclick = ()=>{
-        if(!cloudAccountInfo){
-            alert("请先登录账号");
-            loginModal.style.display = "flex";
-            return;
-        }
-        const save = getSaveData();
-        const res = uploadSaveToSlot(currentSelectSlot,save);
-        alert(res.msg);
-        renderLastSaveTime();
-    };
-
-    // 下载存档
-    downloadSaveBtn.onclick = ()=>{
-        if(!cloudAccountInfo){
-            alert("请先登录账号");
-            loginModal.style.display = "flex";
-            return;
-        }
-        const res = downloadSaveFromSlot(currentSelectSlot);
-        alert(res.msg);
-        if(res.success){
-            location.reload();
-        }
-    };
-}
-
-// 渲染当前存档位上次保存时间
-function renderLastSaveTime(){
-    if(!cloudAccountInfo){
-        lastCloudSaveTimeDom.textContent = "未登录";
-        return;
-    }
-    const slots = getCloudSlots().slots;
-    const slotData = slots[currentSelectSlot];
-    if(!slotData){
-        lastCloudSaveTimeDom.textContent = "暂无存档";
-    }else{
-        const date = new Date(slotData.time);
-        lastCloudSaveTimeDom.textContent = date.toLocaleString();
-    }
-}
-
-function refreshCloudUI(){
-    currentSelectSlot = parseInt(saveSlotSelect.value);
-    renderLastSaveTime();
-}
-
-// ================= 战斗绑定 =================
-function bindBattleEvent(){
-    const save = getSaveData();
-    refreshBattleUI();
-    refreshButtonStatus(save.isBattleRunning);
-
-    startBattleBtn.onclick = ()=>{
-        clearBattleLog();
-        startBattleLoop();
-        refreshButtonStatus(true);
-    };
-    stopBattleBtn.onclick = ()=>{
-        stopBattleLoop();
-        refreshButtonStatus(false);
-    };
-}
-
-function refreshButtonStatus(isRunning){
-    startBattleBtn.disabled = isRunning;
-    stopBattleBtn.disabled = !isRunning;
-}
-
-function refreshBattleUI(){
-    const save = getSaveData();
-    stageInfoDom.textContent = `当前关卡：${save.currentStage}/120`;
-    waveInfoDom.textContent = `当前波次：${save.currentWave}/5`;
-}
-
-function onBattleUpdate(res){
-    const save = getSaveData();
-    switch(res.type){
-        case "refreshMonster":
-            refreshBattleUI();
-            const monster = res.data;
-            monsterNameDom.textContent = monster.name;
-            monsterHpBar.style.width = (monster.hp/monster.maxHp*100)+"%";
+    switch (currentModule) {
+        case 'town':
+            bgImageUrl = 'assets/images/backgrounds/character-bg.jpg';  //城镇模块背景
             break;
-        case "refreshPlayerHp":
-            const totalAttr = calcTotalAttr(save.baseAttr,save.equipWear);
-            playerHpBar.style.width = (res.data/totalAttr.hp*100)+"%";
+        case 'character':
+            bgImageUrl = 'assets/images/backgrounds/character-bg.jpg'; //角色模块背景
             break;
-        case "battleLog":
-            const battleList = res.data.slice().reverse();
-            battleLogDom.innerHTML = battleList.map(item=>`<div class="log-item">${item}</div>`).join("");
+        case 'battle':
+            if (playerLevel >= 1 && playerLevel <= 30) {
+                bgImageUrl = 'assets/images/backgrounds/battle-bg.jpg';  // 战斗1~3关背景
+            } else if (playerLevel >= 31 && playerLevel <= 60) {
+                bgImageUrl = 'assets/images/backgrounds/battle-bg.jpg';
+            } else {
+                bgImageUrl = 'assets/images/backgrounds/battle-bg.jpg'; // 默认战斗背景
+            }
             break;
-        case "dropLog":
-            const dropList = res.data.slice().reverse();
-            dropLogDom.innerHTML = dropList.map(item=>{
-                const cls = window.getRarityClass(item.equip?.rarityName)||"";
-                return `<div class="log-item ${cls}">${item.monsterName} 掉落【${item.equip.name}】</div>`;
-            }).join("");
+        case 'skill':
+            bgImageUrl = 'assets/images/backgrounds/character-bg.jpg';  //技能模块背景
             break;
+        case 'challenge':
+            bgImageUrl = 'assets/images/backgrounds/character-bg.jpg';  //挑战模块背景
+            break;
+        case 'forge':
+            bgImageUrl = 'assets/images/backgrounds/character-bg.jpg'; //锻造模块背景
+            break;
+        default:
+            bgImageUrl = 'assets/images/backgrounds/character-bg.jpg'; //默认背景
     }
+    
+    // 如果浏览器支持，使用 CSS custom property 或 direct style（更推荐）
+    bgEl.style.backgroundImage = `url('${bgImageUrl}')`;
 }
 
-// 离线收益
-function checkOfflineReward(){
-    const reward = calcOfflineReward();
-    if(reward.offlineHour>0.01){
-        const modal = document.createElement("div");
-        modal.className = "modal";
-        modal.innerHTML = `
-        <div class="modal-box">
-            <h3>离线挂机收益</h3>
-            <p>离线时长：${reward.offlineHour.toFixed(2)}小时</p>
-            <p>挂机关卡：第${reward.currentIlvl}关</p>
-            <button id="claimBtn">一键领取</button>
-        </div>`;
-        document.body.appendChild(modal);
-        document.getElementById("claimBtn").onclick = ()=>{
-            claimOfflineReward();
-            modal.remove();
-        };
+// 辅助函数：获取当前激活模块
+function getCurrentActiveModule() {
+    const activePanel = document.querySelector('.tab-panel.active');
+    if (!activePanel) return 'battle'; // 默认
+    return activePanel.id.replace('tab-', '');
+}
+
+// 辅助函数：获取玩家当前关卡
+function getPlayerLevel() {
+    // 根据你的存档结构获取，例如：
+    try {
+        const saveData = JSON.parse(localStorage.getItem('gameSaveData') || '{}');
+        return saveData.currentStage || 1;
+    } catch(e) {
+        return 1;
     }
-}
-
-// ================= 角色背包实时刷新 =================
-function refreshCharacterPanel(){
-    const save = getSaveData();
-    renderAttrPanel(save);
-    renderWearEquip(save);
-    renderBagPanel(save);
-}
-
-function renderAttrPanel(save){
-    const attr = calcTotalAttr(save.baseAttr,save.equipWear);
-    const list = [
-        {label:"最大生命值",value:attr.hp},
-        {label:"攻击力",value:attr.atk},
-        {label:"护甲",value:attr.def},
-        {label:"攻击速度",value:attr.attackSpeed+" 次/秒"},
-        {label:"暴击率",value:(attr.critRate*100).toFixed(2)+"%"},
-        {label:"暴击伤害",value:(attr.critDamage*100).toFixed(0)+"%"}
-    ];
-    attrWrap.innerHTML = list.map(item=>`
-        <div class="attr-item">
-            <span>${item.label}</span>
-            <span>${item.value}</span>
-        </div>`).join("");
-}
-
-function renderWearEquip(save){
-    equipGrid.querySelectorAll(".equip-slot").forEach(slot=>{
-        const pos = slot.dataset.pos;
-        const equip = save.equipWear[pos];
-        if(equip){
-            const cls = window.getRarityClass(equip?.rarityName)||"";
-            slot.className = `equip-slot has-equip ${cls}`;
-            slot.innerHTML = `<div>${equip.name}</div><div>Lv.${equip.equipLv}</div>`;
-            slot.onclick = ()=>{
-                save.equipWear[pos] = null;
-                save.bag.push(structuredClone(equip));
-                setSaveData(save);
-                refreshCharacterPanel();
-            };
-        }else{
-            slot.className = "equip-slot";
-            slot.innerHTML = POSITION_NAME[pos];
-            slot.onclick = null;
-        }
-    });
-}
-
-function renderBagPanel(save){
-    bagCountDom.textContent = `(${save.bag.length}件)`;
-    bagGrid.innerHTML = "";
-    save.bag.forEach((equip,idx)=>{
-        const cls = window.getRarityClass(equip?.rarityName)||"";
-        const div = document.createElement("div");
-        div.className = `bag-item ${cls}`;
-        div.innerHTML = `${equip.name}<br>Lv.${equip.equipLv}`;
-        div.onclick = ()=>showEquipTip(save,equip,idx);
-        bagGrid.appendChild(div);
-    });
-}
-
-// ================= 装备弹窗 =================// 
-function showEquipTip(save,equip,idx){
-    const oldModal = document.querySelector(".equip-tip-modal");
-    if(oldModal) oldModal.remove();
-    const cls = window.getRarityClass(equip?.rarityName)||"";
-    // 获取当前部位已穿戴装备
-    const currentWearEquip = save.equipWear[equip.position];
-
-    // 基础属性格式化
-    let baseStr = "";
-    Object.entries(equip.baseAttr).forEach(([k,v])=>{
-        if(k==="hp") baseStr += `最大生命值 +${v}<br>`;
-        if(k==="atk") baseStr += `攻击力 +${v}<br>`;
-        if(k==="def") baseStr += `护甲 +${v}<br>`;
-        if(k==="critRate") baseStr += `暴击率 +${(v*100).toFixed(2)}%<br>`;
-        if(k==="critDmg") baseStr += `暴击伤害 +${(v*100).toFixed(2)}%<br>`;
-    });
-
-    // 词条属性美化
-    let affixStr = "";
-    equip.affixes.forEach(aff=>{
-        let val = aff.type.startsWith("percent") ? (aff.value*100).toFixed(2)+"%" : aff.value;
-        affixStr += `<span style="color:#a5f3fc">T${aff.tier}</span> ${aff.name} +${val}<br>`;
-    });
-    // 无词条固定显示【随机词条】+内容写无
-    const equipAffixHtml = `<p><strong>【随机词条】</strong><br>${equip.affixes.length ? affixStr : "无"}</p>`;
-
-    // 已穿戴装备面板HTML
-    let wearPanelHtml = "";
-    if(currentWearEquip){
-        const wearCls = window.getRarityClass(currentWearEquip?.rarityName)||"";
-        let wearBase = "";
-        Object.entries(currentWearEquip.baseAttr).forEach(([k,v])=>{
-            if(k==="hp") wearBase += `生命值 +${v}<br>`;
-            if(k==="atk") wearBase += `攻击力 +${v}<br>`;
-            if(k==="def") wearBase += `护甲 +${v}<br>`;
-            if(k==="critRate") wearBase += `暴击率 +${(v*100).toFixed(2)}%<br>`;
-            if(k==="critDmg") wearBase += `暴伤 +${(v*100).toFixed(2)}%<br>`;
-        });
-        let wearAffix = "";
-        currentWearEquip.affixes.forEach(aff=>{
-            let val = aff.type.startsWith("percent") ? (aff.value*100).toFixed(2)+"%" : aff.value;
-            wearAffix += `<span style="color:#a5f3fc">T${aff.tier}</span> ${aff.name} +${val}<br>`;
-        });
-        // 左侧词条固定标签，无则显示无
-        const wearAffixHtml = `<p><strong>【随机词条】</strong><br>${currentWearEquip.affixes.length ? wearAffix : "无"}</p>`;
-
-        wearPanelHtml = `
-        <div class="wear-equip-panel">
-            <h4 class="${wearCls}">${currentWearEquip.rarityName} · ${currentWearEquip.name}<span class="wear-tag">穿戴中</span></h4>
-            <p>装备等级：${currentWearEquip.ilvl}</p>
-            <p><strong>基础属性</strong><br>${wearBase}</p>
-            ${wearAffixHtml}
-        </div>
-        `;
-    }else{
-        wearPanelHtml = `
-        <div class="wear-equip-panel empty-wear">
-            <p>当前部位暂无穿戴装备</p>
-        </div>
-        `;
-    }
-
-    const modal = document.createElement("div");
-    modal.className = "equip-tip-modal";
-    modal.innerHTML = `
-    <div class="equip-tip-box equip-compare-wrap">
-        ${wearPanelHtml}
-        <div class="select-equip-panel">
-            <h3 class="${cls}">${equip.rarityName} · ${equip.name}</h3>
-            <p>装备等级：${equip.ilvl}</p>
-            <p><strong>【基础属性】</strong><br>${baseStr}</p>
-            ${equipAffixHtml}
-        </div>
-        <div class="tip-btn-group">
-            <button class="tip-btn btn-close" id="destroyBtn">销毁装备</button>    
-            <button class="tip-btn btn-wear" id="wearBtn">立即穿戴</button>
-            <button class="tip-btn btn-close" id="closeTip">关闭</button>
-        </div>
-    </div>`;
-    document.body.appendChild(modal);
-
-    // 关闭弹窗
-    document.getElementById("closeTip").onclick = ()=>modal.remove();
-
-    // 穿戴装备
-    document.getElementById("wearBtn").onclick = ()=>{
-        const old = save.equipWear[equip.position];
-        if(old) save.bag.push(structuredClone(old));
-        save.equipWear[equip.position] = structuredClone(equip);
-        save.bag.splice(idx,1);
-        setSaveData(save);
-        modal.remove();
-        refreshCharacterPanel();
-    };
-
-    // 销毁装备
-    document.getElementById("destroyBtn").onclick = () => {
-            // 从背包数组删除当前装备
-            save.bag.splice(idx, 1);
-            setSaveData(save);
-            modal.remove();
-            // 刷新背包面板
-            refreshCharacterPanel();
-        
-    };
-}
-
-// ================= 批量销毁 =================//
-const batchDestroyBtn = document.getElementById("batchDestroyBtn");
-batchDestroyBtn.onclick = openBatchDestroyModal;
-
-// 打开批量销毁弹窗
-function openBatchDestroyModal(){
-    // 移除旧弹窗
-    const oldModal = document.querySelector(".batch-modal");
-    if(oldModal) oldModal.remove();
-
-    const modal = document.createElement("div");
-    modal.className = "batch-modal";
-
-    // 渲染多选品质框
-    let qualityHtml = "";
-    QUALITY_MAP.forEach(item=>{
-        const checked = batchFilterCache.qualityList.includes(item.key) ? "checked" : "";
-        qualityHtml += `
-        <div class="quality-check-item">
-            <input type="checkbox" value="${item.key}" ${checked}>
-            <span class="${item.className}">${item.label}</span>
-        </div>
-        `;
-    });
-
-    modal.innerHTML = `
-    <div class="batch-box">
-        <h3>批量销毁装备</h3>
-        <div class="form-item">
-            <label>物品等级范围</label>
-            <div class="ilvl-range">
-                <input type="number" id="minIlvl" value="${batchFilterCache.minIlvl}" min="1">
-                ~
-                <input type="number" id="maxIlvl" value="${batchFilterCache.maxIlvl}" min="1">
-            </div>
-        </div>
-        <div class="form-item">
-            <label>选择装备品质（可多选）</label>
-            <div class="quality-check-group">
-                ${qualityHtml}
-            </div>
-        </div>
-        <div class="batch-btn-wrap">
-            <button class="tip-btn btn-close" id="confirmBatchDestroy">确定销毁</button>
-            <button class="tip-btn btn-close" id="closeBatchModal">取消</button>
-        </div>
-    </div>
-    `;
-    document.body.appendChild(modal);
-
-    // 取消关闭
-    document.getElementById("closeBatchModal").onclick = ()=>modal.remove();
-
-    // 确认批量销毁
-    document.getElementById("confirmBatchDestroy").onclick = ()=>{
-        const minIlvl = parseInt(document.getElementById("minIlvl").value) || 1;
-        const maxIlvl = parseInt(document.getElementById("maxIlvl").value) || 10;
-        if(minIlvl > maxIlvl){
-            alert("最小等级不能大于最大等级");
-            return;
-        }
-
-        // 获取选中品质
-        const checkInputs = modal.querySelectorAll(".quality-check-item input:checked");
-        const selectQuality = Array.from(checkInputs).map(el=>el.value);
-
-        // 保存用户筛选配置，下次打开记忆
-        batchFilterCache = {
-            minIlvl,
-            maxIlvl,
-            qualityList: selectQuality
-        };
-        localStorage.setItem("batch_destroy_filter", JSON.stringify(batchFilterCache));
-
-        // 筛选背包装备
-        const save = getSaveData();
-        const newBag = save.bag.filter(equip=>{
-            // 等级不在范围内 保留
-            if(equip.ilvl < minIlvl || equip.ilvl > maxIlvl) return true;
-            // 没有勾选任何品质 不销毁
-            if(selectQuality.length === 0) return true;
-            // 选中的品质才销毁
-            return !selectQuality.includes(equip.rarityName);
-        });
-
-        // 覆盖背包
-        save.bag = newBag;
-        setSaveData(save);
-        modal.remove();
-        refreshCharacterPanel();
-    };
 }

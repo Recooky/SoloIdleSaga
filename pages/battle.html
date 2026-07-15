@@ -1,54 +1,108 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>战斗界面 | Solo Idle Saga</title>
-    <link rel="stylesheet" href="../css/common.css">
-    <link rel="stylesheet" href="../css/battle.css">
-</head>
-<body>
-    <div class="container">
-        <button class="back-btn" onclick="history.back()">← 返回首页</button>
-        <div class="battle-header">
-            <h2>⚔️ 自动战斗挂机</h2>
-            <div class="battle-status">
-                <span id="stageInfo"></span>
-                <span style="margin-left:12px" id="waveInfo"></span>
-            </div>
+<!-- 战斗面板 - 由 index.html 通过 data-template 加载 -->
+<!-- 战斗难度选择 -->
+<div class="diff-select-wrap">
+    <!-- 左侧：当前地图名称 -->
+    <div class="diff-info">
+        <span id="currentMapName" class="current-map-name">当前地图：未选择</span>
+        <!-- 右侧：切换大地图按钮 -->
+        <button id="switchMapBtn" class="switch-map-btn">切换大地图</button>
+    </div>
+</div>
+
+<!-- 关卡区域选择 -->
+<div class="stage-area">
+    <div class="stage-selector">
+        <div class="stage-tabs-wrap">
+            <button class="stage-zone-tab" data-zone="0" ></button>
+            <button class="stage-zone-tab" data-zone="1"></button>
+            <button class="stage-zone-tab" data-zone="2"></button>
         </div>
-
-        <div class="battle-area">
-            <h3>你的角色</h3>
-            <div class="hp-bar-wrap">
-                <div id="playerHpBar" class="hp-bar" style="width:100%"></div>
-            </div>
-
-            <div style="margin:30px 0;">VS</div>
-
-            <h3 id="monsterName">等待战斗开始...</h3>
-            <div class="hp-bar-wrap">
-                <div id="monsterHpBar" class="hp-bar"></div>
-            </div>
+    </div>
+    <!-- 关卡网格 -->
+    <div class="stage-grid-wrap" id="stageGridWrap">
+        <!-- 新增：抗性衰减提示行 -->
+        <div class="resist-penalty-bar" id="resistPenaltyBar"></div>
+        <div class="stage-grid" id="stageGrid">
+            <!-- JS 动态生成 10 个关卡 -->
         </div>
+    </div>
+</div>
 
-        <div class="battle-control">
-            <button id="startBattleBtn" class="battle-btn start-btn">开始挂机战斗</button>
-            <button id="stopBattleBtn" class="battle-btn stop-btn">停止战斗</button>
-        </div>
-
-        <div class="log-wrap">
-            <div class="log-box">
-                <h4>⚔️ 战斗攻击日志</h4>
-                <div id="battleLog"></div>
+<div class="battle-bottom">
+    <!-- 关卡日志按钮 -->
+    <div class="battle-header">
+        <div class="battle-status">
+            <!-- 战斗日志图标按钮 -->
+            <div id="logToggleBtn" class="log-toggle-btn" title="查看战斗/掉落日志">
+                <img src="../assets/images/battle/log-btn.png" alt="战斗日志">
+                <span class="log-toggle-text">日志</span>
             </div>
-            <div class="log-box">
-                <h4>📦 装备掉落日志</h4>
-                <div id="dropLog"></div>
+            <span class="highlight" id="waveInfo"></span>
+            <!-- 循环刷怪按钮 -->
+            <div id="loopFarmingBtn" class="loop-farming-btn" title="当前：本关循环（通关后重复挑战同一关）">
+                <img src="../assets/images/battle/loop-on.png" alt="本关循环">
+                <span class="btn-text-overlay">本关循环</span>
             </div>
         </div>
     </div>
 
-    <script type="module" src="../js/pages/battlePage.js"></script>
-</body>
-</html>
+    <!-- 玩家怪物左右对战布局 -->
+    <div class="battle-area">
+        <!-- 玩家角色卡片 -->
+        <div class="player-card" id="playerCard">
+            <div class="player-name" id="playerNameText"></div>
+            <div class="player-hp-section">
+                <div class="hp-bar-wrap">
+                    <div id="playerHpBar" class="hp-bar" style="width:100%"></div>
+                    <div class="hp-text" id="playerHpText">1000 / 1000</div>
+                </div>
+                <div class="mp-bar-wrap">
+                    <div id="playerMpBar" class="mp-bar" style="width:70%"></div>
+                </div>
+            </div>
+            <div class="player-avatar">
+                <img src="../assets/images/battle/player-avatar.png" alt="角色形象" id="playerAvatarImg">
+            </div>
+            <img class="death-image" id="playerDeathImage" src="../assets/images/battle/player-dead.png" alt="阵亡" style="display:none;">
+        </div>
+
+        <!-- 怪物角色卡片 -->
+        <div class="monster-card" id="monsterCard">
+        <div class="monster-name" id="monsterNameText"></div>
+        <div class="player-hp-section">
+            <div class="hp-bar-wrap">
+                <div class="hp-bar-monster" id="monsterHpBar" style="width:100%"></div>
+                <div class="hp-text" id="monsterHpText">0 / 0</div>
+            </div>
+        </div>
+        
+        <div class="player-avatar">
+            <img src="../assets/images/battle/monster-avatar.png" alt="怪物形象" id="monsterAvatarImg">
+        </div>
+        <!-- 怪物阵亡图 -->
+        <img class="death-image" id="monsterDeathImage" src="../assets/images/battle/monster-dead.png" alt="阵亡" style="display:none;">
+        </div>
+    </div>
+    <!-- ===== 倍速战斗按钮（右下角） ===== -->
+    <div class="speed-control">
+        <button id="speedBtn" class="speed-btn speed-1" data-speed="1">x1</button>
+    </div>
+
+
+    <!-- 攻击动画层 -->
+    <div class="attack-effect player-attack" id="playerAttackEffect"></div>
+    <div class="attack-effect monster-attack" id="monsterAttackEffect"></div>
+    <!-- 浮动伤害数字容器 -->
+    <div id="damageNumbers" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:20;overflow:hidden;"></div>
+</div>
+
+<!-- 角色阵亡弹窗（复用全局 modal-overlay + modal-box） -->
+<div id="deathModal" class="modal-overlay battle-death-overlay" style="display:none;">  <!-- ⬅ 新增 battle-death-overlay 类 -->
+    <div class="modal-box death-modal-box">
+        <div class="death-title">角色已阵亡</div>
+        <div class="death-countdown" id="deathCountdown">5秒后自动复活</div>
+    </div>
+</div>
+    
+
+

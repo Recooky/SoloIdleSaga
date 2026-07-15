@@ -1,0 +1,568 @@
+* {
+    box-sizing: border-box;
+}
+html {
+    margin: 0;
+    padding: 0;
+}
+#mainWrap {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+}
+
+.container {
+    display: flex;             
+    flex-direction: column;   
+    flex: 1;                   
+    min-height: 0; 
+    height: 100%;         
+    max-width: 100%;
+    margin: 0 auto;
+}
+body {
+    background: transparent;
+    color: #4a2c11;
+    font-weight:600;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;   /* ← 加上这一行 */
+    height: 100vh;  
+    font-family: "Microsoft YaHei", sans-serif; /* 通用黑体 */
+}
+h3 {
+  font-size: 12px;
+}
+/* ========== 全局背景图层 ========== */
+.game-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('../assets/images/backgrounds/character-bg.jpg'); /* 默认背景 */
+    transition: background-image 0.5s ease; /* 可选的渐变切换效果 */
+}
+
+/* ========== 城镇账号栏 ========== */
+.town-account-bar {
+    display: flex;
+    /* 水平居中 */
+    justify-content: center;
+    /* 垂直居中 */
+    align-items: center;
+    width: 100%;
+    padding: 16px 16px;
+    background-image: url('../assets/images/battle/diffSelect-bj.png');
+    background-size: 100% 100%;
+}
+
+.town-nickname {
+    color: #4a2c11; /* 深棕色文字 */
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    padding: 0 0 0 10px;
+}
+
+.btn-edit-profile {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;          /* 保留原有背景色 */
+    border: none;
+    border-radius: 6px;           /* 方形圆角，视觉统一 */
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+
+.edit-icon-img {
+    width: 20px;                  /* 图标大小 */
+    height: 20px;
+    display: block;
+}
+
+
+
+/* ========== 城镇建筑网格 ========== */
+.town-buildings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.town-building {
+    background: #0f172a;
+    border: 1px solid #273549;
+    border-radius: 12px;
+    padding: 18px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 110px;
+}
+
+.town-building:hover {
+    border-color: #ffd700;
+    background: #162240;
+    transform: translateY(-2px);
+}
+
+.building-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.building-name {
+    font-size: 14px;
+    color: #cbd5e1;
+    text-align: center;
+}
+
+/* ========== 通用弹窗覆盖层样式 ========== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgb(74 74 74 / 75%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-box {
+    background: #fdf8e5; 
+    border: 2px solid #D5AB88;
+    border-radius: 14px;
+    padding: 20px 20px;
+    width: 90%;
+}
+
+.modal-box h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    color: #4a2c11;
+    padding-bottom: 12px;
+}
+
+.modal-box .form-item {
+    margin: 16px 0;
+}
+
+.modal-box .form-item label {
+    display: block;
+    margin-bottom: 8px;
+    color: #4a2c11;
+    font-size: 14px;
+}
+
+.modal-box .form-item input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.modal-box .form-item input[type="text"]:focus {
+    border-color: #2563eb;
+}
+
+.modal-box .tip-btn-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+/* Tab样式（已改为底部导航） */
+.tab-panel {
+    display: none;
+    padding: 0px; /*容器在父容器里面上下左右各增加的边距*/
+    margin-bottom: 0px;
+}
+
+/* ========== 日志面板整体靠下，上方留足间距 ========== */
+.log-tab-header {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.log-tab-btn {
+    padding: 6px 17px;
+    background: #EAC3A3; /* 未选中标签的马卡龙灰底色 */
+    border: 2px solid #D5AB88;
+    border-bottom: 2px solid transparent;
+    border-radius: 8px 9px 0 0; /* 只有顶部是圆角 */
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    color: #555453;
+    position: relative;
+}
+.log-tab-btn.active {
+    background: none; /* 奶白偏暖的主背景色 */
+    /* 确保活动状态的层级最高，能压住内容区的上边框 */
+    z-index: 20; 
+    color: #5D2915;
+    font-weight:600;
+}
+.unified-log-box {
+    height: 320px;
+}
+.log-panel {
+    display: none;
+    height: 100%;
+    overflow-y: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+.log-panel.active {
+    display: block;
+}
+
+/* ========== 底部模块导航栏 ========== */
+/* ========== 底部模块导航栏（透明背景版） ========== */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: transparent;                   /* 先保证无纯色干扰 */
+    background-image: url('../assets/images/backgrounds/nav-bg.png'); /* ← 指定你的图片路径 */
+    background-size: cover;                    /* 覆盖整个导航栏 */
+    background-position: center top;           /* 调整位置 */
+    height: 92px;                     
+    padding: 0;
+    align-items: stretch;             
+    z-index: 9998;
+}
+
+.nav-module {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    background: transparent;          /* ← 保持透明 */
+    border: none;
+    color: rgb(5, 5, 5); /* 半透明白色，与背景融合更好 */
+    font-size: 14px;
+    padding: 2px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    margin: 0 4px;
+    font-weight:600;
+
+}
+
+.nav-module.active {
+    color: #edb300;                   /* 选中金色保留 */
+    font-weight: 600;
+}
+
+/* 模块内容区增加底部内边距，避免被导航栏遮挡 */
+.module-content {
+    display: flex;              /* 新增 */
+    flex-direction: column;
+    flex: 1;
+    padding: 10px;
+    min-height: 0;
+    justify-content: center;
+    overflow-y: auto;
+    padding-bottom: 92px;
+    box-sizing: border-box; 
+}
+
+/* 每个激活的面板高度自适应，不额外限制 */
+.tab-panel.active {
+    display: flex;          /* 改为 flex */
+    flex-direction: column;
+    flex: 1;                /* 占据父容器剩余空间 */
+    min-height: 0; 
+    overflow-y: auto;
+}
+
+
+/* ========== 宽屏设备 => 竖屏手机模式模拟 ========== */
+@media screen and (min-width: 640px) {
+    html, body {
+        height: 100%;
+    }
+    body {
+        display: flex;
+        justify-content: center;        /* 水平居中 */
+        align-items: center;        /* 顶部对齐 */
+        margin: 0;
+        padding: 0;
+        color: #4a2c11;
+    }
+    /* 游戏主容器限制为手机竖屏宽度 */
+    #mainWrap {
+        max-width: 400px;
+        width: 100%;
+        aspect-ratio: 9 / 19;  
+        max-height: 90vh;
+        height: auto;           /* 固定高度，你可以按需改为 700px 或 750px */
+        overflow: hidden;          /* 超出部分裁掉 */
+        position: relative;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        height: 100%; 
+    }
+    .module-content {
+        display: flex;              /* 新增 */
+        flex-direction: column;
+        flex: 1;
+        padding: 10px;
+        min-height: 0;
+        overflow-y: auto;
+        padding-bottom: 92px;
+        box-sizing: border-box; 
+    }
+    .bottom-nav {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 92px;                   /* 与全局 .bottom-nav 高度保持一致 */
+        flex-shrink: 0;
+        margin: 0;
+        /* 注意：确保只有一个 .bottom-nav 块 */
+    }
+        /* 单弹窗（非对比模式下）限制宽度，防止溢出 */
+    .equip-tip-modal .equip-tip-box {
+        max-width: 340px;
+        width: 90% !important;   /* 覆盖原来的 70%，更适应小容器 */
+    }
+
+    /* 同时缩小单弹窗里词条名宽度，与对比模式对齐 */
+    .equip-tip-modal .affix-name {
+        flex: 0 0 105px;
+    }
+      /* 将 mainWrap 内部的所有 fixed 弹窗改为 absolute，限制在模拟容器内 */
+    .modal-overlay,
+    .equip-tip-modal,
+    .equip-compare-container,
+    .batch-modal,
+    .all-attr-modal,
+    .death-modal,
+    #logModal {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* 特别处理 equip-compare-container 内部两个卡片 */
+    .equip-compare-container {
+        gap: 4px;
+        padding: 8px;
+    }
+    .equip-compare-container .equip-tip-box {
+        width: 48%;
+        max-width: 180px;
+    }
+}
+
+/* ========== 大地图选择弹窗 ========== */
+/* 大地图选择弹窗卡片容器（相对定位，供背景图定位） */
+.zone-popup-box {
+    position: relative;
+    overflow: hidden;          /* 让背景图不超过圆角边界 */
+    
+}
+
+/* 卡片内部的装饰背景图 */
+.zone-popup-box .zone-popup-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('../assets/images/battle/MapZone.png');
+    background-size: contain;
+    background-repeat: no-repeat;    /* 不重复 */
+    background-position: center;     /* 居中 */
+    border-radius: 14px; 
+    z-index: 0;
+    pointer-events: none;      /* 不影响点击 */
+}
+
+.zone-List {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    padding: 0px 16px 8px 8px;
+    position: relative;
+    width: 65%;               /* 卡片宽度固定，容器也固定 */
+    border-radius: 12px;
+    margin-left: auto;           /* ★ 关键：在父元素中居中 */
+    margin-right: auto;
+}
+
+/* 每个 zone 条目 */
+.zone-item {
+    display: flex;               /* 启用 flex */
+    justify-content: center;     /* 水平居中 */
+    align-items: center;  
+    width: 90%;
+    height: 70px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    /* 柔和的圆角 */
+    background-color: #EAE3D9;
+    /* 兜底背景色 */   
+    /* 核心边框设计：模拟 2D 游戏 UI 的实体感 */
+    border: 3px solid #63534B;
+    /* 柔和的深灰褐色主边框 */  
+    /* 利用 box-shadow 增加手绘的微弱高光和厚度 */
+    box-shadow:
+        inset 0 2px 0px rgba(255, 255, 255, 0.15),
+        /* 顶部内高光，增加圆润感 */
+        0 2px 0px #4A3C35;
+    /* 底部外阴影，模拟 UI 厚度，非模糊阴影 */ 
+    position: relative;
+    overflow: hidden;
+    /* 保证内部背景图不出界 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+/* zone-item 的灰色遮罩层 */
+.zone-item-overlay {
+    position: absolute;
+    inset: 0;                      /* 铺满整个卡片 */
+    background: rgba(0, 0, 0, 0);  /* 默认透明 */
+    pointer-events: none;          /* 不拦截点击事件 */
+    transition: background 0.2s ease;
+    z-index: 1;                    /* 在背景之上，在文字之下（或者根据需求调整） */
+}
+
+/* 锁定状态下显示灰色遮罩 */
+.zone-item.locked .zone-item-overlay {
+    background: rgba(128, 128, 128, 0.55);  /* 灰色半透明遮罩 */
+    /* 可选的亮度/对比度方案： */
+    /* backdrop-filter: grayscale(90%) brightness(0.6);  /* 更高级的"变灰+压暗"效果 */ 
+}
+.zone-item.selected {
+    /* 1. 主边框变成明亮但不刺眼的马卡龙金色 */
+    border: 3px solid #F6D365; 
+    /* 2. 多重阴影构建发光与厚度 */
+    box-shadow: 
+        inset 0 0 0 2px rgba(255, 255, 255, 0.4), /* 内侧纯白描边，让金边显得清透 */
+        0 2px 0px #C99720,                        /* 底部金色实体厚度，替代原本的棕色厚度 */
+        0 0 10px 2px rgba(246, 211, 101, 0.4);    /* 极其柔和的金色外发光，不破坏治愈系氛围 */
+    /* 稍微放大一点点以突出当前选择 (可选) */
+    transform: scale(1.02);
+    z-index: 2; /* 确保放大后不被上下元素遮挡 */
+}
+
+
+/* zone 名称 */
+.zone-name {
+    font-size: 16px;
+    font-weight: 600;
+    /* 1. 基础排版 */
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    font-size: 24px;       /* 字体稍微大一点，突出大地图的层级 */
+    font-weight: 900;      /* 使用最高字重，显得饱满有力 */
+    letter-spacing: 3px;   /* 增加一点字间距，提升高级感和呼吸感 */
+    color: #4A2B1D;        /* 深暖棕色，融入整体马卡龙治愈系色调 */
+    text-shadow:
+        -2px -2px 0 #FFF6E8,
+         2px -2px 0 #FFF6E8,
+        -2px  2px 0 #FFF6E8,
+         2px  2px 0 #FFF6E8,
+         0px  3px 6px rgba(0, 0, 0, 0.25); /* 底部外发散阴影，让文字浮在背景图之上 */
+}
+
+.zone-item.locked .zone-name {
+    color: #64748b;
+}
+
+/* zone 子区域提示（可选） */
+.zone-sub {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* ========== 全局细滚动条样式 ========== */
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Chrome / Safari / Edge */
+*::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 2px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}

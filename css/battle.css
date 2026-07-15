@@ -1,82 +1,154 @@
-.back-btn {
-    background: #2d3748;
-    border: none;
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 15px;
-}
-.back-btn:hover {
-    background: #4a5568;
-}
 
 .battle-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 8px;         /* 减小间距 */
+    flex-shrink: 0;             /* 不压缩 */
 }
 .battle-status {
-    font-size: 16px;
-    color: #ffd700;
+    display: flex;
+    justify-content: space-between;  /* 改为 space-between */
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    width: 100%; 
 }
+.highlight{
+    position: relative;
+    font-size: 18px; /* 字体大小 */
+    /* 建议使用较粗且圆润的字体，效果更贴近原图 */
+    font-family: "Zcool KuaiLe", "Arial Black", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-weight: 900; /* 极致粗体 */
+    color: #FFCF73; /* 文字主体的浅橙色 */
+    letter-spacing: 2px; /* 稍微拉开字间距 */
+    z-index: 1; /* 保证主体文字在最上层 */
+    -webkit-text-stroke: 1px black;
+}
+
 
 .battle-area {
-    background: #0f172a;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-.hp-bar-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
     width: 100%;
-    height: 20px;
-    background: #333;
     border-radius: 10px;
-    margin: 10px 0;
+    padding: 0 16px 10px 16px;
+    margin-bottom: 0;           /* 改为 0，由父容器控制 */
+    text-align: center;
+    flex:1;                    /* 占据剩余空间 */
+    min-height: 0;
     overflow: hidden;
 }
+.hp-bar-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: #2D1D18; /* 掉血后露出的深褐色底色 */
+    border: 2px solid #3E2B25; /* 和描边颜色一致的粗边框 */
+    border-radius: 3px;        /* 极小的圆角，保持硬朗感 */
+    box-sizing: border-box;
+    overflow: hidden;
+}
+/* ===== 血条内部的数值文字（在 .hp-bar-wrap 内部） ===== */
+.hp-bar-wrap .hp-text,
+.hp-bar-wrap .hp-text-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 2;
+    margin: 0;               /* 覆盖旧的外边距 */
+    line-height: 1;          /* 避免文字溢出 */
+    /* 新增：关闭浏览器最小字号限制 */
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+}
+
+/* 玩家侧血条更矮，文字要更小 */
+.player-hp-section .hp-bar-wrap .hp-text {
+    font-size: 8px;
+}
+
 .hp-bar {
     height: 100%;
-    background: #22c55e;
-    transition: width 0.2s;
+    background-color: #E5534B; /* 视觉上比较明亮的二次元红 */
+    transition: width 0.15s linear; /* 掉血时干脆利落的过渡 */
 }
+.hp-bar.ally {
+  background: linear-gradient(180deg, #88E0A0 0%, #5BCB7A 100%);
+}
+
+.hp-bar-monster {
+    height: 100%;
+    background: #ef4444;
+    transition: width 0.2s ease;
+}
+/* ===== 魔力条样式（细、蓝色）===== */
+.mp-bar-wrap {
+    width: 100%;
+    height: 4px;            /* 比血条 16px 更细 */
+    background: #1e293b;    /* 深灰色背景槽 */
+    border-radius: 4px;
+    margin: 0;      /* 顶部微间距，与血条紧贴 */
+    overflow: hidden;
+}
+
+.mp-bar {
+    height: 100%;
+    background: #3b82f6;    /* 标准蓝色 #3b82f6，也可用渐变 */
+    transition: width 0.2s ease;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    box-shadow: 0 0 6px rgba(59,130,246,0.5);
+}
+
+.hp-text {
+    font-size: 14px;
+    color: #eee;
+}
+
 .monster-name {
-    font-size: 20px;
-    margin: 10px 0;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 2px; /* 控制名字和血条的间距 */
+    
+    /* 利用多重文字阴影完美模拟 2D 游戏的深色粗描边 */
+    text-shadow:
+        -1px -1px 0 #3E2B25,
+        1px -1px 0 #3E2B25,
+        -1px  1px 0 #3E2B25,
+        1px  1px 0 #3E2B25,
+        0px  2px 0 #3E2B25; /
 }
 
-.battle-control {
-    margin: 20px 0;
-}
-.battle-btn {
-    padding: 10px 24px;
-    font-size: 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    margin: 0 8px;
-}
-.start-btn {
-    background: #16a34a;
-    color: #fff;
-}
-.stop-btn {
-    background: #dc2626;
-    color: #fff;
+.player-name {
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 2px; /* 控制名字和血条的间距 */
+    
+    /* 利用多重文字阴影完美模拟 2D 游戏的深色粗描边 */
+    text-shadow:
+        -1px -1px 0 #3E2B25,
+        1px -1px 0 #3E2B25,
+        -1px  1px 0 #3E2B25,
+        1px  1px 0 #3E2B25,
+        0px  2px 0 #3E2B25; /
 }
 
-.log-wrap {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
 .log-box {
-    background: #0f172a;
     padding: 12px;
     border-radius: 8px;
-    height: 300px;
+    height: 500px;
     overflow-y: auto;
 }
 .log-box h4 {
@@ -87,4 +159,810 @@
     font-size: 13px;
     line-height: 1.6;
     padding: 2px 0;
+}
+
+/* ========== 日志弹窗样式 ========== */
+
+.log-modal-tab-header {
+    display: flex;
+    gap: 12px; /* Tab 之间的间距 */
+    padding-left: 12px;
+    /* 【核心魔法】：让 Tabs 整体往下挪动，盖住下方内容区的顶部边框 */
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid #D5AB88;
+}
+
+.log-modal-box-content {
+    flex: 1;
+    overflow-y: auto;
+    width: 100%;
+}
+
+
+/* 战斗日志图片按钮 */
+.log-toggle-btn {
+    position: relative;
+    width: 78px;          /* 根据实际图片尺寸调整 */
+    height: 30px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-right: auto; 
+    display: inline-block;
+}
+.log-toggle-btn img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;        /* 让图片自适应容器 */
+    display: block;
+}
+
+.log-toggle-text {
+    position: absolute;
+    top: 50%;                   /* 垂直居中，也可以根据希望在图片上方调整为 top: 0 */
+    left: 62%;
+    transform: translate(-50%, -50%);
+    color: #4a2c11;             /* 金色文字，与游戏主题一致 */
+    font-size: 12px;
+    font-weight: bold;
+    pointer-events: none;       /* 不干扰点击 */
+    white-space: nowrap;
+    z-index: 2;
+}
+
+.loop-farming-btn {
+    position: relative;
+    margin-left: auto;
+    width: 100px;          /* 根据实际图片尺寸调整 */
+    height: 30px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.loop-farming-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;        /* 让图片自适应容器 */
+    display: block;
+}
+.btn-text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 65%;
+    transform: translate(-50%, -50%);
+    color: #4a2c11;             /* 金色，可根据背景调整 */
+    font-size: 12px;
+    font-weight: bold;
+    pointer-events: none;       /* 不干扰点击 */
+    white-space: nowrap;
+    z-index: 2;
+    line-height: 1;
+}
+
+/* 玩家角色卡片 */
+.player-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: "Microsoft YaHei", sans-serif;
+    width: 160px;
+    position: relative;
+    height: 220px;
+}
+
+/* 怪物角色卡片 */
+.monster-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+    border-radius: 12px;
+    padding-top: 6px;
+    padding-right: 6px;
+    padding-bottom: 16px;
+    padding-left: 6px;
+    width: 160px;
+    position: relative;
+    height: 220px;
+}
+
+.player-hp-section {
+    position: relative; /* 关键：为了让 HP 文字可以绝对定位悬浮 */
+    width: 100px;        /* 血条的整体宽度 */
+    height: 10px;        /* 图片里的血条是细长扁平的 */
+    margin-top: 2px;
+}
+
+.player-hp-section .hp-bar-wrap {
+    width: 100%;
+    height: 16px;
+    margin: 0;
+}
+
+.hp-text {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.player-avatar {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0px 0px 0px;
+    /* 柔和的暖色调背景，模拟原画中的UI底板 */
+}
+
+.player-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ========== 关卡选择容器 ========== */
+.stage-area {
+    border-radius: 10px;
+    padding: 16px 6px;
+    margin-bottom: 0px;
+    height: 290px;
+    text-align: center;
+    background-image: url('../assets/images/battle/stage-area.png');
+    /* 背景从padding内侧开始渲染，不会铺满padding区域 */
+    background-origin: padding-box;
+    /* 背景只在内容区域展示，四周自动留出padding的10px空白 */
+    background-size: calc(100% - 20px) calc(100% - 20px);
+    background-repeat: no-repeat;
+    background-position: center center;
+    position: relative;
+    background-size: 100% 100%;       /* ← 改这里：从 contain 改为 100% 100% */
+
+}
+
+
+.stage-selector {
+    margin-top: 10px;
+    width: 100%;
+    max-width: 400px;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    color: #D5AB88;
+    margin-bottom: 6px;
+}
+
+.stage-tabs-wrap {
+    display: flex;
+    gap: 8px;                 /* 去掉固定 gap，因为 flex:1 会自动分配间隙 */
+    padding: 0px 12px;         /* 去掉固定左内边距 */
+    margin-bottom: -2px;
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid #D5AB88;
+}
+
+.stage-zone-tab {
+    flex: 1;                /* ← 关键：每个 TAB 等宽 */
+    text-align: center;
+    justify-content: center; /* 内部内容水平居中 */
+    padding: 6px 0;          /* 左右内边距设为 0，让 flex 控制宽度 */
+    background: #EAC3A3;
+    border: 2px solid #D5AB88;
+    border-bottom: 2px solid transparent;
+    border-radius: 8px 9px 0 0;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    color: #555453;
+    position: relative;
+}
+
+
+/* TAB顶部微弱高光提升质感 */
+.stage-zone-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+/* 激活选中态 */
+.stage-zone-tab.active {
+    background: none; /* 奶白偏暖的主背景色 */
+    border: 2px solid #D5AB88;   
+    border-bottom-width: 3px; 
+    border-bottom-color: #fdf8e5; 
+    top: 1px;                               /* 向下 1px */
+    margin-bottom: -1px;  
+    /* 确保活动状态的层级最高，能压住内容区的上边框 */
+    z-index: 20; 
+    color: #5D2915;
+    font-weight:600;
+}
+
+
+/* 未解锁禁用态 */
+.stage-zone-tab:disabled {
+    opacity: 0.85;
+    cursor: not-allowed;
+    transform: none;
+    background: #cacaca;
+}
+
+/* ★ 新增：未解锁的 tab 右上角显示锁图标 */
+.stage-zone-tab:disabled::after {
+    content: '🔒';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: not-allowed;
+    pointer-events: none; /* 不干扰点击 */
+    opacity: 0.9;
+    z-index: 30;
+    filter: grayscale(1) brightness(0.7);
+    opacity: 0.9;
+}
+
+/* ========== 战斗模块顶部难度选择背景图 ========== */
+.diff-select-wrap {
+    display: flex;
+    /* 水平居中 */
+    justify-content: center;
+    /* 垂直居中 */
+    align-items: center;
+    width: 100%;
+    padding: 16px 16px;
+    background-image: url('../assets/images/battle/diffSelect-bj.png');
+    background-size: 100% 100%;
+
+}
+
+/* 信息行（左名称 + 右按钮） */
+.diff-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* 当前地图名称 */
+.current-map-name {
+    color: #4a2c11; /* 深棕色文字 */
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    padding: 0 10px;
+}
+
+/* 切换大地图按钮 */
+.switch-map-btn {
+    height: 28px;
+    padding: 0 13px;
+    margin: 0 13px;
+    background: linear-gradient(to bottom, #f8c87c, #e8a84c); /* 金色/琥珀色渐变 */
+    border: none; /* 移除默认边框 */
+    border-radius: 8px; /* 圆角 */
+    color: #4a2c11; /* 深棕色文字 */
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.3), /* 外部投影 */
+      inset 0 1px 0 rgba(255, 255, 255, 0.6), /* 顶部内高光 */
+      inset 0 -2px 0 rgba(0, 0, 0, 0.15), /* 底部内阴影 */
+      inset 1px 1px 1px #96603a, /* 内侧深色凹陷边框效果 (左上) */
+      inset -1px -1px 1px #96603a; /* 内侧深色凹陷边框效果 (右下) */
+    position: relative;
+    transition: all 0.1s ease; /* 平滑过渡效果 */
+}
+.switch-map-btn:hover {
+    background: linear-gradient(to bottom, #ffdc9c, #f8b85c); /* 更亮的金色 */
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.4), /* 更强的外部投影 */
+      inset 0 1px 0 rgba(255, 255, 255, 0.7), 
+      inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+      inset 1px 1px 1px #96603a, 
+      inset -1px -1px 1px #96603a;
+}
+
+/* 下拉框容器（弹出层） */
+.diff-dropdown {
+    top: calc(100% - 4px);   /* 紧贴底部 */
+    right: 16px;              /* 与按钮右对齐 */
+    z-index: 999;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    min-width: 160px;
+}
+
+/* 隐藏难以下拉框原有的外观改动（保持原样） */
+#diffSelect {
+    appearance: none;
+    width: 100%;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    outline: none;
+}
+#diffSelect option {
+    background: #1e293b;
+    color: #ffffff;
+}
+
+
+.stage-diff-select select:focus {
+    border-color: #2563eb;
+}
+
+.stage-diff-select select option:disabled {
+    color: #475569;
+}
+
+/* 关卡网格容器美化 */
+.stage-grid-wrap {
+    margin-bottom: 20px;
+    padding: 0px 12px;
+}
+
+.stage-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px 8px;
+    padding: 0px 0px;
+}
+
+/* 单元格容器 */
+.stage-cell {
+  position: relative;  /* 让绝对定位的 stage-current-overlay 相对于此定位 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 60px;
+  padding: 0;
+  background: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: visible;   /* 设为 visible，让 box-shadow 不被裁剪 */
+}
+
+
+/* ===== 当前关卡右上角“当前”小标签 ===== */
+.stage-cell.current .stage-current-overlay {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 24px;
+  height: 16px;
+  background: linear-gradient(135deg, #ffd700, #f0a500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: #3a1f00;
+  border-radius: 4px;
+  padding: 0 4px;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+  white-space: nowrap;
+}
+
+/* 背景图区域 */
+.stage-cell .stage-bg {
+  width: 60px;
+  height: 60px;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+
+/* 各级状态的背景图 */
+.stage-cell.locked .stage-bg {
+  background-image: url('../assets/images/battle/stafe-cell-locked.png');
+  opacity: 0.35;
+}
+.stage-cell.unlocked-cleared .stage-bg {
+  background-image: url('../assets/images/battle/stafe-cell-unlocked.png');
+}
+.stage-cell.unlocked-uncleared .stage-bg {
+  background-image: url('../assets/images/battle/stafe-cell-current.png');
+}
+/* current 类不干扰背景图：背景图由 unlocked-cleared / unlocked-uncleared / locked 决定 */
+
+/* 数字标签 */
+.stage-cell .stage-label {
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a2c11;
+  padding: 4px 0;
+  line-height: 1;
+}
+
+
+/* ========== 战斗模块背景图 ========== */
+#tab-battle {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#tab-battle.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1;                /* 不依赖父容器高度，直接由 flex 分配 */
+    min-height: 0;
+}
+
+/* 背景图上的半透明遮罩层（保证内容可读性） */
+#tab-battle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;  /* 确保不阻挡点击 */
+    z-index: 0;
+}
+
+/* ===== 新增：战斗下半部分容器 ===== */
+.battle-bottom {
+    flex: 1;                    /* ← 新增：占据父容器剩余空间 */
+    padding: 2px 2px 2px 2px;                /* ← 新增：占据父容器剩余空间 */
+    min-height: 0;              /* ← 新增：允许flex收缩时不会溢出 */
+    /* 移除 max-height 或保留更大的值 */
+    overflow: hidden;
+    display: flex;              /* ← 新增：使其成为 Flex 容器 */
+    flex-direction: column;     /* ← 新增：纵向排列子元素 */
+}
+
+/* 让所有战斗内容都在遮罩层之上 */
+#tab-battle > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ========== 战斗日志文字颜色美化 ========== */
+.log-item.player-normal {
+    color: #4a2c11;
+}
+.log-item.player-crit {
+    color: #D5AB88;
+    font-weight: bold;
+}
+.log-item.monster-attack {
+    color: #ff6b6b
+}
+.log-item.system-tip {
+    color: #4ade80;
+}
+
+/* ===== 抗性衰减提示行 ===== */
+.resist-penalty-bar {
+    width: 100%;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    color: #5D2915;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    box-sizing: border-box;
+}
+.resist-penalty-bar .penalty-icon.penalty-warn {
+    color: #ff4444;       /* 红色 ⚠ */
+}
+.resist-penalty-bar .penalty-icon.penalty-ok {
+    color: #22c55e;       /* 绿色 ✓ */
+}
+.resist-penalty-bar .penalty-value {
+    color: #ff6b00;       /* 橙色数值 -xx% */
+}
+
+/* ===== 攻击闪光特效 ===== */
+.attack-effect {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: none;
+    z-index: 10;
+}
+
+/* 玩家攻击怪物 → 在怪物身上闪白光 */
+.player-attack {
+    right: 20%;
+    top: 35%;
+    background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,215,0,0.4) 40%, transparent 70%);
+    box-shadow: 0 0 30px rgba(255,215,0,0.6);
+}
+
+/* 怪物攻击玩家 → 在玩家身上闪红光 */
+.monster-attack {
+    left: 20%;
+    top: 35%;
+}
+
+/* 闪光动画 */
+@keyframes attackFlash {
+    0%   { opacity: 0; transform: scale(0.3); }
+    30%  { opacity: 1; transform: scale(1.2); }
+    60%  { opacity: 0.8; transform: scale(0.9); }
+    100% { opacity: 0; transform: scale(0.5); }
+}
+
+.attack-effect.flash {
+    animation: attackFlash 0.3s ease-out forwards;
+}
+
+/* ===== 浮动伤害数字 ===== */
+.dmg-number {
+    position: absolute;
+    font-size: 24px;
+    font-weight: bold;
+    pointer-events: none;
+    animation: floatUp 2s ease-out forwards;
+    z-index: 20;
+    
+    /* 利用多重文字阴影完美模拟 2D 游戏的深色粗描边 */
+    text-shadow:
+        -1px -1px 0 #3E2B25,
+        1px -1px 0 #3E2B25,
+        -1px  1px 0 #3E2B25,
+        1px  1px 0 #3E2B25,
+        0px  2px 0 #3E2B25; /
+}
+
+.dmg-number.player-dmg {
+    color: #ED6253;        /* 玩家伤害 = 金色 */
+    right: 25%;
+    top: 20%;
+}
+
+.dmg-number.monster-dmg {
+    color: #ED6253;        /* 怪物伤害 = 红色 */
+    left: 25%;
+    top: 20%;
+}
+
+.dmg-number.crit-text {
+    font-size: 32px;
+    color: #FEA443;
+    text-shadow:
+        -1px -1px 0 #3E2B25,
+        1px -1px 0 #3E2B25,
+        -1px  1px 0 #3E2B25,
+        1px  1px 0 #3E2B25,
+        0px  2px 0 #3E2B25; 
+}
+
+@keyframes floatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    50%  { opacity: 0.9; transform: translateY(-40px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+}
+
+/* ===== 受击抖动 ===== */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+}
+
+/* ===== 怪物前冲 ===== */
+@keyframes monsterLunge {
+    0%   { transform: translateX(0) scale(1); }
+    40%  { transform: translateX(-30px) scale(1.1); }  /* 向左冲（面向玩家） */
+    60%  { transform: translateX(-20px) scale(0.95); }
+    100% { transform: translateX(0) scale(1); }
+}
+
+#monsterCard.monster-attacking {
+    animation: monsterLunge 0.35s ease-in-out;
+}
+
+
+/* 怪物卡片受击后仰 */
+@keyframes hitBack {
+    0%   { transform: scale(1); }
+    25%  { transform: scale(0.85) translateX(10px); }
+    50%  { transform: scale(0.95) translateX(-5px); }
+    100% { transform: scale(1) translateX(0); }
+}
+
+
+.hit-back {
+    animation: hitBack 2s ease-out;
+}
+
+/* 玩家攻击前摇 */
+@keyframes attackLunge {
+    0%   { transform: translateX(0) scale(1); }
+    40%  { transform: translateX(30px) scale(1.1); }
+    60%  { transform: translateX(20px) scale(0.95); }
+    100% { transform: translateX(0) scale(1); }
+}
+
+.player-attacking {
+    animation: attackLunge 0.35s ease-in-out;
+}
+
+
+/* ===== 回血/回蓝数字（绿色） ===== */
+.dmg-number.heal-number {
+    color: #59E476;
+    left: 35%;
+    top: 25%;
+    font-size: 20px;
+    text-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    animation: healFloatUp 2.0s ease-out forwards;
+    /* 利用多重文字阴影完美模拟 2D 游戏的深色粗描边 */
+    text-shadow:
+        -1px -1px 0 #3E2B25,
+        1px -1px 0 #3E2B25,
+        -1px  1px 0 #3E2B25,
+        1px  1px 0 #3E2B25,
+        0px  2px 0 #3E2B25; /
+}
+
+.dmg-number.heal-number.mp-heal {
+    color: #3b82f6;
+    text-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+}
+
+@keyframes healFloatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    50%  { opacity: 0.9; transform: translateY(-30px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(0.9); }
+}
+
+.dmg-number.miss-text {
+    color: #C6C6C8 !important;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 16px;
+    right: 25%;    /* ← 定位到怪物区域 */
+    top: 20%;      /* ← 定位到怪物上方 */
+    text-shadow:
+        -1px -1px 0 #3E2B25,
+        1px -1px 0 #3E2B25,
+        -1px  1px 0 #3E2B25,
+        1px  1px 0 #3E2B25,
+        0px  2px 0 #3E2B25; 
+}
+
+.dmg-number.miss-text {
+    color: #94a3b8 !important;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 16px;
+    right: 25%;    /* ← 定位到怪物区域 */
+    top: 25%;      /* ← 定位到怪物上方 */
+}
+
+/* ===== 倍速控制按钮 ===== */
+.speed-control {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 16px 8px 0;
+    flex-shrink: 0;
+    position: static;           /* 取消 fixed */
+    bottom: auto; right: auto;
+}
+
+.speed-btn {
+    background: #FCF6E4;
+    border: 3px solid #EAC4A4;
+    color: #4a2c11;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    min-width: 56px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    user-select: none;
+}
+
+
+#playerAvatarImg,
+#monsterAvatarImg {
+    height: auto;
+    object-fit: contain;
+}
+
+/* ===== 卡片死亡状态 ===== */
+.player-card.dead .player-avatar,
+.player-card.dead .player-hp-section,
+.player-card.dead .player-name,
+.monster-card.dead .monster-name,          /* monster-card 里的名字是 monster-name */
+.monster-card.dead .player-hp-section,     /* 怪物也有血条，class 同上 */
+.monster-card.dead .player-avatar {        /* 怪物头像也是 player-avatar */
+    display: none;
+}
+
+.death-image {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 10px;             /* 底部留边距，类似原头像 padding-bottom */
+    width: auto;
+    height: 70%;              /* 占卡片高度 70%，留出顶部空间 */
+    max-height: 130px;        /* 防止图片太大 */
+    z-index: 5;
+    pointer-events: none;
+    object-fit: contain;
+}
+
+/* ========== 阵亡弹窗 ========== */
+/* ===== 阵亡弹窗：基于全局 modal-box 的自定义宽高 ===== */
+.death-modal-box {
+    width: 280px;              /* ★ 自定义宽度 */
+    max-width: 85vw;           /* 小屏自适应 */
+    height: auto;              /* 高度由内容撑开 */
+    min-height: 120px;         /* 最小高度 */
+    padding: 30px 24px;        /* 稍大内边距让内容居中 */
+    text-align: center;
+
+}
+
+.death-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #4a2c11;
+    padding: 10px 10px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 8px rgba(255, 68, 68, 0.4);
+    border-bottom: 1px solid #4a2c11;
+}
+
+.death-countdown {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4a2c11;
+    letter-spacing: 1px;
+}
+
+/* ===== 阵亡弹窗：覆盖整个战斗模块 ===== */
+#deathModal.battle-death-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);  /* 半透明遮罩，加深阵亡氛围 */
 }

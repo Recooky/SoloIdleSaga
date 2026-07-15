@@ -3,7 +3,8 @@ const REMOTE_VERSION_URL = "/version.json";
 // 本地存储已加载版本
 const LOCAL_VERSION_KEY = "game_local_version";
 
-export async function checkVersionUpdate() {
+// 把导出函数挂载到全局window，删除export关键字
+window.checkVersionUpdate = async function () {
     try {
         // 读取本地记录的版本
         const localRecordVersion = localStorage.getItem(LOCAL_VERSION_KEY) || "0.0.0";
@@ -25,4 +26,4 @@ export async function checkVersionUpdate() {
         localStorage.setItem(LOCAL_VERSION_KEY, window.GAME_VERSION);
         console.log("本地调试模式，跳过版本更新检测", err.message);
     }
-}
+};

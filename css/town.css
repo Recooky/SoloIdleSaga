@@ -1,0 +1,26 @@
+.town-gold-display {
+    position: relative;               /* ← 新增：让 ::before 相对于本元素定位 */
+    padding-left: 30px;               /* ← 新增：给左边的图标留出空间 */
+    margin-left: auto;
+    margin-right: 10px;
+    color: #4a2c11;
+    font-size: 13px;
+    font-weight: 600;
+    background: #EAC3A3;
+    padding: 4px 14px 4px 30px;      /* ← 修改：左边距加大，为图标腾位置 */
+    border-radius: 18px;
+   
+    white-space: nowrap;
+}
+.town-gold-display::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    background-image: url('../assets/images/icons/coin-icon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
