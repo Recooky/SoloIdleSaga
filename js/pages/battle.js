@@ -239,12 +239,12 @@ function renderBattleHpUI() {
             monsterAvatarImg.src = imgPath;
             // 如果加载失败，自动回退到默认图片
             monsterAvatarImg.onerror = function() {
-                this.src = './assets/images/battle/monster-avatar.png';
+                this.src = '../../assets/images/battle/monster-avatar.png';
                 this.onerror = null; // 防止默认图片也加载失败时死循环
             };
         } else {
             // 没有配置图片路径，使用默认图片
-            monsterAvatarImg.src = './assets/images/battle/monster-avatar.png';
+            monsterAvatarImg.src = '../../assets/images/battle/monster-avatar.png';
         }
     }
 }
@@ -540,11 +540,11 @@ function initBattleModule() {
         
         // 根据存档初始化
         if (save.isLoopFarming) {
-            img.src = './assets/images/battle/loop-on.png';
+            img.src = '../../assets/images/battle/loop-on.png';
             if (overlayText) overlayText.textContent = '本关循环';
             loopFarmingBtn.title = '当前：本关循环（通关后重复挑战同一关）';
         } else {
-            img.src = './assets/images/battle/loop-off.png';
+            img.src = '../../assets/images/battle/loop-off.png';
             if (overlayText) overlayText.textContent = '继续闯关';
             loopFarmingBtn.title = '当前：继续闯关（通关后自动进入下一关）';
         }
@@ -555,11 +555,11 @@ function initBattleModule() {
             setSaveData(s);
             
             if (s.isLoopFarming) {
-                img.src = './assets/images/battle/loop-on.png';
+                img.src = '../../assets/images/battle/loop-on.png';
                 if (overlayText) overlayText.textContent = '本关循环';
                 this.title = '当前：本关循环（通关后重复挑战同一关）';
             } else {
-                img.src = './assets/images/battle/loop-off.png';
+                img.src = '../../assets/images/battle/loop-off.png';
                 if (overlayText) overlayText.textContent = '继续闯关';
                 this.title = '当前：继续闯关（通关后自动进入下一关）';
             }

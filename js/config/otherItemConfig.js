@@ -105,7 +105,7 @@ window.OTHER_ITEM_CONFIG = {
         category: '宝箱',
         rarity: 3,
         dropSources: [
-            { regionStageRange: [1, 3], monsterQuality: 3, rate: 0.6 }  // 首领100%掉落
+            { regionStageRange: [1, 3], monsterQuality: 3, rate: 0.5 }  // 首领100%掉落
         ],
         openContents: {
             guaranteed: [

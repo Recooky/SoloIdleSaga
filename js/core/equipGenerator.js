@@ -54,9 +54,9 @@ window.getRandomRarity = function(level, monsterQualityIdx) {
 window.monsterDropEquip = function(level, monsterQualityIdx) {
     // 根据怪物品质设定掉落概率：普通30%，精英60%，稀有80%，史诗（BOSS）100%
     const dropChanceMap = {
-        0: 0.20,  // 普通怪物 30%
-        1: 0.40,  // 优秀怪物 60%
-        2: 0.70,  // 稀有怪物 80%
+        0: 0.15,  // 普通怪物 30%
+        1: 0.30,  // 优秀怪物 60%
+        2: 0.50,  // 稀有怪物 80%
         3: 1.00   // 史诗（BOSS）100%
     };
     const dropChance = dropChanceMap[monsterQualityIdx] ?? 0.30;

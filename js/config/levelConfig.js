@@ -82,7 +82,7 @@ window.MONSTER_REGION_CONFIG = [
     stage: 1,
     range: [1, 10],
     resistPenalty: 0,
-    background: "./assets/images/backgrounds/zone-bg/dark-forest.jpg",
+    background: "../../assets/images/backgrounds/zone-bg/dark-forest.jpg",
     monstersByQuality: {
         0: [ // 普通品质（3只），仅一种攻击属性
             { id: "goblin_scout", name: "哥布林斥候", hp: 80, atk: 12, def: 5, dodge: 5, hit: 8, fireRes: 0, coldRes: 0, lightRes: 0,
@@ -218,7 +218,7 @@ window.MONSTER_REGION_CONFIG = [
     stage: 4,
     range: [31, 40],
     resistPenalty: 0.35,
-    background: "./assets/images/backgrounds/zone-bg/lava-cave.jpg",
+    background: "../../assets/images/backgrounds/zone-bg/lava-cave.jpg",
     monstersByQuality: {
         0: [ // 普通品质（3只），仅一种攻击属性
             { id: "lava_lizard", name: "熔岩蜥蜴", hp: 180, atk: 0, elementType: "fireDmg", elementDmg: 22, def: 10, dodge: 6, hit: 12, fireRes: 0.20, coldRes: 0, lightRes: 0.05,
@@ -354,7 +354,7 @@ window.MONSTER_REGION_CONFIG = [
     stage: 7,
     range: [61, 70],
     resistPenalty: 0.85,
-    background: "./assets/images/backgrounds/zone-bg/void-fortress.jpg",
+    background: "../../assets/images/backgrounds/zone-bg/void-fortress.jpg",
     monstersByQuality: {
         0: [ // 普通品质（3只），仅一种攻击属性
             { id: "skeleton_soldier", name: "骷髅战士", hp: 350, atk: 36, def: 20, dodge: 8, hit: 20, fireRes: 0.10, coldRes: 0.20, lightRes: 0.05,
@@ -490,7 +490,7 @@ window.MONSTER_REGION_CONFIG = [
     stage: 10,
     range: [91, 100],
     resistPenalty: 1.55,
-    background: "./assets/images/backgrounds/zone-bg/star-abyss.jpg", 
+    background: "../../assets/images/backgrounds/zone-bg/star-abyss.jpg", 
     monstersByQuality: {
         0: [ // 普通品质（3只），仅一种攻击属性
             { id: "star_slime", name: "星界软泥", hp: 600, atk: 52, def: 32, dodge: 10, hit: 30, fireRes: 0.30, coldRes: 0.30, lightRes: 0.40,

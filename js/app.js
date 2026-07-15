@@ -149,10 +149,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 }
 
     // 2. 页面初始化：加载云端存档时间 + 自动拉取登录用户存档
-    (async function initPage() {
+    const pageInitPromise = (async function initPage() {
         await initCloudSaveTime();
         await autoLoadCloudSaveAfterLogin();
     })();
+
+    // 然后在调用 initBattleModule 前等待它完成
+    await pageInitPromise;  // 等登录恢复完毕
+    // 此时 currentUser 已正确设置（或明确为 null）
+    if (typeof initBattleModule === 'function') initBattleModule();
 
     // 3. 底部导航模块切换绑定
     const navModules = document.querySelectorAll('.nav-module');
@@ -224,35 +229,35 @@ function updateGameBackground() {
     const currentModule = getCurrentActiveModule(); // 需要实现：获取当前激活的模块名
     const playerLevel = getPlayerLevel();           // 需要实现：从存档获取当前关卡数
     
-    let bgImageUrl = './assets/images/backgrounds/default-bg.jpg'; // 默认背景
+    let bgImageUrl = '../assets/images/backgrounds/default-bg.jpg'; // 默认背景
 
     switch (currentModule) {
         case 'town':
-            bgImageUrl = './assets/images/backgrounds/character-bg.jpg';  //城镇模块背景
+            bgImageUrl = '../assets/images/backgrounds/character-bg.jpg';  //城镇模块背景
             break;
         case 'character':
-            bgImageUrl = './assets/images/backgrounds/character-bg.jpg'; //角色模块背景
+            bgImageUrl = '../assets/images/backgrounds/character-bg.jpg'; //角色模块背景
             break;
         case 'battle':
             if (playerLevel >= 1 && playerLevel <= 30) {
-                bgImageUrl = './assets/images/backgrounds/battle-bg.jpg';  // 战斗1~3关背景
+                bgImageUrl = '../assets/images/backgrounds/battle-bg.jpg';  // 战斗1~3关背景
             } else if (playerLevel >= 31 && playerLevel <= 60) {
-                bgImageUrl = './assets/images/backgrounds/battle-bg.jpg';
+                bgImageUrl = '../assets/images/backgrounds/battle-bg.jpg';
             } else {
-                bgImageUrl = './assets/images/backgrounds/battle-bg.jpg'; // 默认战斗背景
+                bgImageUrl = '../assets/images/backgrounds/battle-bg.jpg'; // 默认战斗背景
             }
             break;
         case 'skill':
-            bgImageUrl = './assets/images/backgrounds/character-bg.jpg';  //技能模块背景
+            bgImageUrl = '../assets/images/backgrounds/character-bg.jpg';  //技能模块背景
             break;
         case 'challenge':
-            bgImageUrl = './assets/images/backgrounds/character-bg.jpg';  //挑战模块背景
+            bgImageUrl = '../assets/images/backgrounds/character-bg.jpg';  //挑战模块背景
             break;
         case 'forge':
-            bgImageUrl = './assets/images/backgrounds/character-bg.jpg'; //锻造模块背景
+            bgImageUrl = '../assets/images/backgrounds/character-bg.jpg'; //锻造模块背景
             break;
         default:
-            bgImageUrl = './assets/images/backgrounds/character-bg.jpg'; //默认背景
+            bgImageUrl = '../assets/images/backgrounds/character-bg.jpg'; //默认背景
     }
     
     // 如果浏览器支持，使用 CSS custom property 或 direct style（更推荐）

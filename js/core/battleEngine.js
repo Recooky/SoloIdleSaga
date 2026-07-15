@@ -359,16 +359,16 @@ function playerAttack() {
         
          // ★ 改为 3 秒后进入下一波（原为 300ms）
         setTimeout(() => {
-            // ★ 通知 UI 隐藏怪物阵亡图（下只怪即将生成）
             if (battleCallback) battleCallback({ type: "monsterDead", data: false });
             nextWaveOrStage();
-            // 重启战斗定时器
+            
+            const speed = window.gameSpeed || 1;                      // ← 获取当前倍速
             const newAttr = calcTotalAttr(save.baseAttr, save.equipWear);
-            playerAttackTimer = setInterval(playerAttack, 1000 / newAttr.attackSpeed);
-            monsterAttackTimer = setInterval(monsterAttack, 1000 / currentMonster.attackSpeed);
-            hpRegenTimer = setInterval(hpRegenTick, 3000);
-            mpRegenTimer = setInterval(mpRegenTick, 3000);
-        }, 3000);
+            playerAttackTimer  = setInterval(playerAttack,  1000 / (newAttr.attackSpeed * speed));
+            monsterAttackTimer = setInterval(monsterAttack, 1000 / (currentMonster.attackSpeed * speed));
+            hpRegenTimer = setInterval(hpRegenTick, 3000 / speed);
+            mpRegenTimer = setInterval(mpRegenTick, 3000 / speed);
+        }, 3000 / (window.gameSpeed || 1));        
     }
 }
 
@@ -629,9 +629,8 @@ window.startBattleLoop = function () {
     setSaveData(save);
     // 拦截重复开启战斗
     if (save.isBattleRunning) {
-        // ★ 增强：如果是卡死状态，强制修复
-        console.warn("检测到战斗卡死状态，强制重置...");
-        stopBattleLoop();  // 先清理旧定时器和状态
+        console.log("检测到战斗卡死状态，强制重置...");  // 仅普通日志
+        stopBattleLoop();
         save.isBattleRunning = false;
         setSaveData(save);
     }
