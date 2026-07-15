@@ -50,7 +50,7 @@ h3 {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url('/assets/images//backgrounds/character-bg.jpg'); /* 默认背景 */
+    background-image: url('./assets/images/backgrounds/character-bg.jpg'); /* 默认背景 */
     transition: background-image 0.5s ease; /* 可选的渐变切换效果 */
 }
 
@@ -63,7 +63,7 @@ h3 {
     align-items: center;
     width: 100%;
     padding: 16px 16px;
-    background-image: url('/assets/images//battle/diffSelect-bj.png');
+    background-image: url('./assets/images/battle/diffSelect-bj.png');
     background-size: 100% 100%;
 }
 
@@ -277,7 +277,7 @@ h3 {
     justify-content: space-around;
     align-items: center;
     background: transparent;                   /* 先保证无纯色干扰 */
-    background-image: url('/assets/images//backgrounds/nav-bg.png'); /* ← 指定你的图片路径 */
+    background-image: url('./assets/images/backgrounds/nav-bg.png'); /* ← 指定你的图片路径 */
     background-size: cover;                    /* 覆盖整个导航栏 */
     background-position: center top;           /* 调整位置 */
     height: 92px;                     
@@ -432,7 +432,7 @@ h3 {
 .zone-popup-box .zone-popup-bg {
     position: absolute;
     inset: 0;
-    background-image: url('/assets/images//battle/MapZone.png');
+    background-image: url('./assets/images/battle/MapZone.png');
     background-size: contain;
     background-repeat: no-repeat;    /* 不重复 */
     background-position: center;     /* 居中 */

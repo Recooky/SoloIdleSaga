@@ -10,7 +10,7 @@
     padding: 8px 12px;
     /* 背景图相关 */
     position: relative;
-    background-image: url('/assets/images//character/character-bg.png');
+    background-image: url('./assets/images/character/character-bg.png');
     background-size: 100% 100%;
     background-position: center;   /* 默认居中，如果想保留顶部重点内容用 center top */
     background-repeat: no-repeat;
@@ -28,7 +28,7 @@
 }
 
 .bag-panel {
-    background-image: url('/assets/images//character/bage-bg.png');
+    background-image: url('./assets/images/character/bage-bg.png');
     background-size: 100% 100%;           /* 宽度100%，高度自适应压缩 */
     background-position: center;
     background-repeat: no-repeat;
@@ -793,7 +793,7 @@
 
 /* 自动出售按钮 — 暗蓝灰 */
 .btn-auto-sell {
-    background-image: url('/assets/images//character/btn-auto-sell.jpg');
+    background-image: url('./assets/images/character/btn-auto-sell.jpg');
     background-size: cover;            /* 覆盖整个按钮 */
     background-position: center;
     background-repeat: no-repeat;
@@ -808,7 +808,7 @@
 
 /* 批量出售按钮 — 暗琥珀灰 */
 .btn-batch-sell {
-    background-image: url('/assets/images//character/btn-batch-sell.jpg');
+    background-image: url('./assets/images/character/btn-batch-sell.jpg');
     background-size: cover;            /* 覆盖整个按钮 */
     background-position: center;
     background-repeat: no-repeat;
