@@ -57,14 +57,14 @@ window.POSITION_NAME = {
 
 // js/config/gameConfig.js
 window.POSITION_ICON = {
-    weapon:   '../assets/images/icons/slot-weapon.png',
-    helmet:   '../assets/images/icons/slot-helmet.png',
-    armor:    '../assets/images/icons/slot-armor.png',
-    boot:     '../assets/images/icons/slot-boot.png',
-    pants:    '../assets/images/icons/slot-pants.png',
-    glove:    '../assets/images/icons/slot-glove.png',
-    ring:     '../assets/images/icons/slot-ring.png',
-    necklace: '../assets/images/icons/slot-necklace.png'
+    weapon:   'assets/images/icons/slot-weapon.png',
+    helmet:   'assets/images/icons/slot-helmet.png',
+    armor:    'assets/images/icons/slot-armor.png',
+    boot:     'assets/images/icons/slot-boot.png',
+    pants:    'assets/images/icons/slot-pants.png',
+    glove:    'assets/images/icons/slot-glove.png',
+    ring:     'assets/images/icons/slot-ring.png',
+    necklace: 'assets/images/icons/slot-necklace.png'
 };
 
 // 武器子类型（含显示名）
