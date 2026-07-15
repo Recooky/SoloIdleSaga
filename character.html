@@ -1,0 +1,55 @@
+<!-- 角色背包面板 - 由 index.html 通过 data-template 加载 -->
+<div class="town-account-bar">
+    <span id="loginAccountShow" class="town-nickname"></span>
+    <button id="editProfileBtn" class="btn-edit-profile">
+        <img src="../assets/images/icons/edit-icon.png" alt="编辑" class="edit-icon-img">
+    </button>
+    <span class="town-gold-display" id="townGoldDisplay">0</span>
+</div>
+<div class="wrap-row">
+    <div class="equip-panel">
+        <!-- 装备穿戴栏 -->
+        <div class="equip-grid" id="equipGrid">
+            <div class="equip-slot" data-pos="weapon">武器</div>
+            <div class="equip-slot" data-pos="helmet">头盔</div>
+            <div class="equip-slot" data-pos="armor">护甲</div>
+            <div class="equip-slot" data-pos="pants">裤子</div>
+            <div class="equip-slot" data-pos="glove">手套</div>
+            <div class="equip-slot" data-pos="boot">靴子</div>
+            <div class="equip-slot" data-pos="ring">戒指</div>
+            <div class="equip-slot" data-pos="necklace">项链</div>
+        </div>
+    </div>
+    <div class="attr-panel">
+        <div id="attrWrap"></div>
+        <div class="all-attr-btn-wrap">
+        <button id="showAllAttrBtn" class="all-attr-btn">全部属性</button>
+        </div>
+    </div>
+</div>
+<div class="bag-action-bar" style="justify-content: flex-end;">
+    <div class="bag-action-btns">
+        <button id="autoSellBtn" class="bag-action-btn btn-auto-sell">自动出售</button>
+        <button id="batchSellBtn" class="bag-action-btn btn-batch-sell">批量出售</button>
+    </div>
+</div>
+<div class="bag-panel">
+    <div class="bag-filter-tabs" id="bagFilterTabs">
+    <span class="filter-tab active" data-filter="weapon">
+        <img class="tab-icon" src="../assets/images/icons/chos-weapon.png" alt="武器"> 武器
+    </span>
+    <span class="filter-tab" data-filter="armor">
+        <img class="tab-icon" src="../assets/images/icons/chos-armor.png" alt="护甲"> 护甲
+    </span>
+    <span class="filter-tab" data-filter="jewelry">
+        <img class="tab-icon" src="../assets/images/icons/chos-ring.png" alt="首饰"> 首饰
+    </span>
+    <span class="filter-tab" data-filter="other">
+        <img class="tab-icon" src="../assets/images/icons/chos-other.png" alt="其他"> 其他
+    </span>
+    <span class="sort-toggle-btn" id="sortToggleBtn" title="切换排序方式">
+        <img class="sort-icon" src="../assets/images/icons/sortToggle.png"></span>
+    </span>
+</div>
+    <div class="bag-grid" id="bagGrid"></div>
+</div>
