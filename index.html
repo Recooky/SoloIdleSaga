@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:,">
+    <!-- ★ 手动指定正确的 base ★ -->
+    <script>
+      (function() {
+        var base = document.createElement('base');
+        if (window.location.protocol === 'file:') {
+          // 本地用 file:// 双击打开
+          base.href = './';
+        } else if (window.location.hostname.indexOf('github.io') !== -1) {
+          // GitHub Pages：提取仓库名（如 /SoloIdleSaga/）
+          var match = window.location.pathname.match(/^\/[^\/]+\//);
+          base.href = match ? match[0] : '/';
+        } else {
+          // 本地测试环境（Live Server / localhost）
+          base.href = '/';
+        }
+        document.head.prepend(base);
+      })();
+    </script>
     <style>
         @keyframes spin {
             to { transform: rotate(360deg); }
