@@ -16,6 +16,7 @@ try {
 }
 
 let currentUser = null;
+window.currentUser = currentUser; 
 let isRegisterMode = false;
 let modalInited = false;
 // 自动云存档定时器

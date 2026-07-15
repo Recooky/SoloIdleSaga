@@ -618,6 +618,12 @@ function nextWaveOrStage() {
 }
 
 window.startBattleLoop = function () {
+    // ★ 增：登录守卫
+    const isLoggedIn = currentUser != null;
+    if (!isLoggedIn) {
+        console.warn("登录后才可开始战斗");
+        return;
+    }
     const save = getSaveData();
     save.currentWave = 1;
     setSaveData(save);
