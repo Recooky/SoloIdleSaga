@@ -306,7 +306,7 @@
     margin-bottom: 0px;
     height: 290px;
     text-align: center;
-    background-image: url('../assets/images/battle/stage-area.png');
+    background-image: url('/assets/images//battle/stage-area.png');
     /* 背景从padding内侧开始渲染，不会铺满padding区域 */
     background-origin: padding-box;
     /* 背景只在内容区域展示，四周自动留出padding的10px空白 */
@@ -419,7 +419,7 @@
     align-items: center;
     width: 100%;
     padding: 16px 16px;
-    background-image: url('../assets/images/battle/diffSelect-bj.png');
+    background-image: url('/assets/images//battle/diffSelect-bj.png');
     background-size: 100% 100%;
 
 }
@@ -579,14 +579,14 @@
 
 /* 各级状态的背景图 */
 .stage-cell.locked .stage-bg {
-  background-image: url('../assets/images/battle/stafe-cell-locked.png');
+  background-image: url('/assets/images//battle/stafe-cell-locked.png');
   opacity: 0.35;
 }
 .stage-cell.unlocked-cleared .stage-bg {
-  background-image: url('../assets/images/battle/stafe-cell-unlocked.png');
+  background-image: url('/assets/images//battle/stafe-cell-unlocked.png');
 }
 .stage-cell.unlocked-uncleared .stage-bg {
-  background-image: url('../assets/images/battle/stafe-cell-current.png');
+  background-image: url('/assets/images//battle/stafe-cell-current.png');
 }
 /* current 类不干扰背景图：背景图由 unlocked-cleared / unlocked-uncleared / locked 决定 */
 
