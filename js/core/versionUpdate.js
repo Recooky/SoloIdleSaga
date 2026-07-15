@@ -1,6 +1,6 @@
 window.GAME_VERSION = "0.0.1"; 
 // 线上版本配置地址，部署后在项目根目录创建version.json
-const REMOTE_VERSION_URL = "/version.json";
+const REMOTE_VERSION_URL = "./version.json";
 // 本地存储已加载版本
 const LOCAL_VERSION_KEY = "game_local_version";
 

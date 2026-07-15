@@ -156,8 +156,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // 然后在调用 initBattleModule 前等待它完成
     await pageInitPromise;  // 等登录恢复完毕
-    // 此时 currentUser 已正确设置（或明确为 null）
-    if (typeof initBattleModule === 'function') initBattleModule();
 
     // 3. 底部导航模块切换绑定
     const navModules = document.querySelectorAll('.nav-module');

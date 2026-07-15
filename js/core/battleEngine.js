@@ -702,6 +702,13 @@ window.setGameSpeed = function(speed) {
     speed = Math.max(1, Math.min(3, speed));
     window.gameSpeed = speed;
 
+    const speedBtn = document.getElementById('speedBtn');
+    if (speedBtn) {
+        speedBtn.dataset.speed = speed;
+        speedBtn.textContent = 'x' + speed;
+        speedBtn.className = 'speed-btn speed-' + speed;
+    }
+    
     const save = getSaveData();
     // 只有战斗运行中才需要重建定时器
     if (!save.isBattleRunning) return;

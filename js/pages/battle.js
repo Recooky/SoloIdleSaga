@@ -470,7 +470,7 @@ function initBattleModule() {
             const isSelected = (_selectedDiff === diffIdx) || 
                             (_selectedDiff === -1 && getDiffIndex(currentStage) === diffIdx);
 
-            const bgUrl = config.background ? `../${config.background}` : '';  // ← 只取config的background，没有则空字符串
+            const bgUrl = config.background ? config.background.replace(/^\.\//, '../') : '';
 
             zones.push({
                 diffIdx: diffIdx,
@@ -683,35 +683,28 @@ function initBattleModule() {
     });
 
     // ===== 倍速控制 =====
-    // js/pages/battle.js — 在 initBattleModule 函数内
-
-    // ===== 倍速控制 =====
     const speedBtn = document.getElementById('speedBtn');
     if (speedBtn) {
-        // 从存档读取（旧档可能没有，用 || 1 兜底）
         const save = getSaveData();
-        const initialSpeed = save.gameSpeed || 1;
-        window.gameSpeed = initialSpeed;                     // 同步到全局
-        speedBtn.dataset.speed = initialSpeed;
-        speedBtn.textContent = 'x' + initialSpeed;
-        speedBtn.className = 'speed-btn speed-' + initialSpeed;
+        if (typeof window.setGameSpeed === 'function') {
+            window.setGameSpeed(save.gameSpeed || 1);
+        }
 
-        speedBtn.addEventListener('click', function () {
+        speedBtn.replaceWith(speedBtn.cloneNode(true));  // ★ 清除旧事件
+
+        // 重新获取新按钮（因为 replaceWith 后原来的引用已无效）
+        const newSpeedBtn = document.getElementById('speedBtn');
+        if (!newSpeedBtn) return;
+
+        newSpeedBtn.addEventListener('click', function () {
             let currentSpeed = parseInt(this.dataset.speed) || 1;
             let nextSpeed = currentSpeed < 3 ? currentSpeed + 1 : 1;
-            this.dataset.speed = nextSpeed;
-            this.textContent = 'x' + nextSpeed;
-            this.className = 'speed-btn speed-' + nextSpeed;
-
             if (typeof window.setGameSpeed === 'function') {
                 window.setGameSpeed(nextSpeed);
             }
-
-            // 持久化到存档
             const s = getSaveData();
             s.gameSpeed = nextSpeed;
             setSaveData(s);
-
             addBattleLog('⚡ 战斗速度已切换至 x' + nextSpeed);
         });
     }
