@@ -246,82 +246,106 @@
         </div>
     </div>
 
-<!-- 注册 Service Worker（用于缓存图片等静态资源） -->
-<!-- 注册 Service Worker（用于缓存图片等静态资源） -->
+<!-- 资源预加载机制：优先 SW，降级为 JS 预加载 -->
 <script>
-  (function() {
-    // ★ 预先定义消息处理函数，避免时序问题
-    function cacheProgressHandler(event) {
-      const data = event.data;
-      if (data && data.type === 'CACHE_PROGRESS') {
-        const percent = Math.round((data.loaded / data.total) * 100);
-        document.getElementById('progressPercent').textContent = percent + '%';
-        document.getElementById('progressBarFill').style.width = percent + '%';
-        document.getElementById('progressDetail').textContent =
-          '已缓存 ' + data.loaded + ' / ' + data.total + ' 张图片';
+(function() {
+  var isFileProtocol = window.location.protocol === 'file:';
+  var totalImages = 0;
+  var loadedImages = 0;
+  
+  function updateProgress(percent) {
+    document.getElementById('progressPercent').textContent = percent + '%';
+    document.getElementById('progressBarFill').style.width = percent + '%';
+    document.getElementById('progressDetail').textContent = 
+      '已加载 ' + loadedImages + ' / ' + totalImages + ' 张图片';
+  }
+  
+  function hideMask() {
+    document.getElementById('progressLabel').textContent = '资源加载完成！即将进入游戏...';
+    setTimeout(function() {
+      document.getElementById('loadingMask').style.display = 'none';
+    }, 500);
+  }
 
-        if (data.loaded >= data.total) {
-          document.getElementById('progressLabel').textContent = '资源加载完成！即将进入游戏...';
-          setTimeout(function() {
-            document.getElementById('loadingMask').style.display = 'none';
-          }, 500);
-        }
-      }
-    }
+  // 1. 获取图片清单（使用相对于当前页面的正确路径）
+  fetch('./assets/images/manifest.json')
+    .then(function(resp) { return resp.json(); })
+    .then(function(manifest) {
+      totalImages = manifest.images.length;
 
-    // 降级隐藏函数（超时或失败时调用）
-    function hideLoadingMask() {
-      document.getElementById('progressLabel').textContent = '正在进入游戏...';
-      setTimeout(function() {
-        document.getElementById('loadingMask').style.display = 'none';
-      }, 500);
-    }
-
-    if ('serviceWorker' in navigator) {
-      // ★ 先挂载监听器（事件监听在注册之前就挂上）
-      navigator.serviceWorker.addEventListener('message', cacheProgressHandler);
-
-      // 注册 SW
-      navigator.serviceWorker.register('./sw.js')
-        .then(function(reg) {
-          console.log('SW registered:', reg.scope);
-
-          // ★ 如果 SW 已经激活（第二次加载），说明缓存已存在，直接进入游戏
-          if (reg.active) {
-            // 给 SW 一点时间检查更新，但为了用户体验，1秒后直接隐藏遮罩
-            setTimeout(hideLoadingMask, 1000);
+      // 如果是 file:// 协议，或者浏览器不支持 SW，用 JS 预加载
+      if (isFileProtocol || !('serviceWorker' in navigator)) {
+        manifest.images.forEach(function(path) {
+          var img = new Image();
+          img.onload = function() {
+            loadedImages++;
+            updateProgress(Math.round((loadedImages / totalImages) * 100));
+            if (loadedImages >= totalImages) hideMask();
+          };
+          img.onerror = function() {
+            loadedImages++;
+            if (loadedImages >= totalImages) hideMask();
+          };
+          img.src = path; // path 以 / 开头，受 base 影响会自动补全仓库前缀
+        });
+      } else {
+        // 正常 SW 注册流程
+        function cacheProgressHandler(event) {
+          var data = event.data;
+          if (data && data.type === 'CACHE_PROGRESS') {
+            var percent = Math.round((data.loaded / data.total) * 100);
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('progressBarFill').style.width = percent + '%';
+            document.getElementById('progressDetail').textContent =
+              '已缓存 ' + data.loaded + ' / ' + data.total + ' 张图片';
+            if (data.loaded >= data.total) hideMask();
           }
+        }
 
-          // 监听更新事件（新版本的 SW 进入 waiting 状态时触发）
-          reg.addEventListener('updatefound', function() {
-            const installingWorker = reg.installing;
-            installingWorker.addEventListener('statechange', function() {
-              if (installingWorker.state === 'activated') {
-                // 新 SW 已激活，说明版本更新，缓存可能正在构建
-                console.log('New SW activated, caching in progress...');
-              }
+        // ★ 先挂载监听器
+        navigator.serviceWorker.addEventListener('message', cacheProgressHandler);
+
+        navigator.serviceWorker.register('./sw.js')
+          .then(function(reg) {
+            console.log('SW registered:', reg.scope);
+            // 如果 SW 已经激活（第二次加载），1秒后直接进入
+            if (reg.active) {
+              setTimeout(hideMask, 1000);
+            }
+          })
+          .catch(function(err) {
+            console.warn('SW registration failed:', err.message);
+            // 降级到 JS 预加载
+            manifest.images.forEach(function(path) {
+              var img = new Image();
+              img.onload = function() {
+                loadedImages++;
+                updateProgress(Math.round((loadedImages / totalImages) * 100));
+                if (loadedImages >= totalImages) hideMask();
+              };
+              img.onerror = function() {
+                loadedImages++;
+                if (loadedImages >= totalImages) hideMask();
+              };
+              img.src = path;
             });
           });
-        })
-        .catch(function(err) {
-          console.warn('SW registration failed:', err.message);
-          hideLoadingMask();
-        });
 
-      // ★ 超时降级：如果 8 秒内未完成缓存（或未收到任何消息），也显示页面
-      setTimeout(function() {
-        // 检查是否已隐藏
-        var mask = document.getElementById('loadingMask');
-        if (mask && mask.style.display !== 'none') {
-          console.log('Cache timeout, entering game anyway.');
-          hideLoadingMask();
-        }
-      }, 8000);
-    } else {
-      // 不支持 SW 的浏览器，直接显示页面
-      hideLoadingMask();
-    }
-  })();
+        // 8 秒超时降级
+        setTimeout(function() {
+          var mask = document.getElementById('loadingMask');
+          if (mask && mask.style.display !== 'none') {
+            console.log('Cache timeout, entering game anyway.');
+            hideMask();
+          }
+        }, 8000);
+      }
+    })
+    .catch(function() {
+      // manifest.json 获取失败，直接进入游戏
+      hideMask();
+    });
+})();
 </script>
 
 </body>
