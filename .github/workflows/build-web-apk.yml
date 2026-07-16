@@ -26,27 +26,20 @@ jobs:
       - name: 全局安装 Cordova
         run: npm install -g cordova@latest
 
-      # 手动安装 Android SDK
-      - name: 安装 Android SDK
+      # 使用系统自带的 Android SDK，只安装缺少的组件
+      - name: 安装 Android SDK 组件
         run: |
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -q commandlinetools-linux-11076708_latest.zip
+          # 使用系统自带的 SDK
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
           
-          mkdir -p android-sdk/cmdline-tools
-          mv cmdline-tools android-sdk/cmdline-tools/latest
+          # 安装所需组件
+          sudo $ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
           
-          echo "ANDROID_SDK_ROOT=$PWD/android-sdk" >> $GITHUB_ENV
-          echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
-          echo "$PWD/android-sdk/build-tools/33.0.2" >> $GITHUB_PATH
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
           
-          export ANDROID_SDK_ROOT=$PWD/android-sdk
-          SDKMANAGER=$PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager
-          
-          yes | $SDKMANAGER --licenses > /dev/null 2>&1
-          $SDKMANAGER "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-          
-          echo "Android SDK 安装完成"
+          echo "Android SDK 组件安装完成"
 
       - name: 创建 Cordova 项目
         run: |
@@ -64,18 +57,16 @@ jobs:
           mkdir -p res/android
           if [ -f ../../app-icon/icon.png ]; then
             cp ../../app-icon/icon.png res/android/icon.png
-            # 在 <widget> 标签内插入图标配置
             sed -i '/<widget /a \ \ <icon src="res/android/icon.png" density="xxxhdpi" />' config.xml
           fi
           
           # 在 <widget> 标签内插入访问权限
           sed -i '/<widget /a \ \ <access origin="*" />' config.xml
           
-          # 在 <widget> 标签内插入 edit-config（用于允许明文流量）
-          sed -i '/<widget /a \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n    <application android:usesCleartextTraffic="true" />\n  <\/edit-config>' config.xml
+          # 在 <platform name="android"> 内部插入 edit-config
+          sed -i '/<platform name="android">/a \ \ \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n        <application android:usesCleartextTraffic="true" />\n      <\/edit-config>' config.xml
           
           echo "Config.xml 配置完成"
-          # 查看配置结果（调试用）
           cat config.xml
 
       - name: 写入跳转网页首页
@@ -86,8 +77,11 @@ jobs:
       - name: 编译 APK
         run: |
           cd game-apk
-          export ANDROID_SDK_ROOT=$PWD/../android-sdk
+          # 使用系统 SDK，统一环境变量
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
           export GRADLE_OPTS="-Xmx2048m -Dorg.gradle.jvmargs=-Xmx2048m"
+          
           cordova build android --debug
 
       - name: 上传 APK
