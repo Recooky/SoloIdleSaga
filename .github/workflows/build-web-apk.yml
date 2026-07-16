@@ -1,6 +1,5 @@
 name: Build WebGame APK
 on:
-  # 删除 push 区块，提交代码不再自动执行
   workflow_dispatch:
 
 jobs:
@@ -8,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 拉取仓库全部代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 配置 Node.js 22
         uses: actions/setup-node@v4
