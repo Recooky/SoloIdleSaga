@@ -89,6 +89,33 @@ function getTierClass(tier) {
     return `tier-${t}`;
 }
 
+/**
+ * 根据稀有度名称获取显示颜色（背景+边框）
+ */
+function getRarityDisplayColor(rarityName) {
+    const idx = window.RARITY_CONFIG.findIndex(r => r.name === rarityName);
+    if (idx !== -1 && window.RARITY_DISPLAY_COLORS && window.RARITY_DISPLAY_COLORS[idx]) {
+        return window.RARITY_DISPLAY_COLORS[idx];
+    }
+    return { bg: '#f5e6c8', border: '#d4a574' };
+}
+
+/**
+ * 根据装备对象获取图标URL
+ * 1. 优先从模板库读取（如果模板有icon字段）
+ * 2. 回退到部位通用图标
+ */
+function getEquipIcon(equip) {
+    if (!equip) return './assets/images/icons/slot-weapon.png';
+    if (typeof getEquipBaseTemplate === 'function') {
+        const template = getEquipBaseTemplate(equip.ilvl, equip.position, equip.subType);
+        if (template && template.icon) {
+            return template.icon;
+        }
+    }
+    return window.POSITION_ICON[equip.position] || './assets/images/icons/slot-weapon.png';
+}
+
 // 1. 渲染角色属性面板
 function renderAttrPanel() {
     const save = getSaveData();
@@ -224,11 +251,21 @@ function renderEquipSlots() {
         slot.dataset.lastFingerprint = currentFingerprint;
 
         if (equip) {
-            const enhanceStr = equip.enhanceLevel ? `+${equip.enhanceLevel}` : '';
+
+            const enhanceBadge = equip.enhanceLevel
+                ? `<span class="enhance-badge-hover">+${equip.enhanceLevel}</span>`
+                : '';
             const lockHtml = equip.locked ? '<span class="equip-lock-icon">🔒</span>' : '';
-            // 名称 + 强化等级（空格分隔），锁通过浮动定位到右上角
-            slot.innerHTML = `${equip.name} ${enhanceStr}${lockHtml}`;
+
+            // ★ 获取图标URL，只显示图标
+            const iconUrl = getEquipIcon(equip);
+
+
+            slot.innerHTML = `<img src="${iconUrl}" alt="${equip.name}" class="slot-icon">${enhanceBadge}${lockHtml}`;
             slot.className = `equip-slot has-equip ${getRarityClass(equip.rarityName)}`;
+            const dc = getRarityDisplayColor(equip.rarityName);
+            slot.style.backgroundColor = dc.bg;
+            slot.style.borderColor = dc.border;
             slot.onclick = () => showEquipTip(equip, pos);
         } else {
             slot.className = 'equip-slot';
@@ -279,30 +316,35 @@ function renderBagList() {
             if (orderA !== orderB) return orderA - orderB;
             return (b.equip.ilvl || 0) - (a.equip.ilvl || 0);
         });
-    } else if (bagSortMode === 'ilvl') {
-        // 按物品等级降序，同级按id降序（新获取的在前）
-        filteredWithIndex.sort((a, b) => {
-            if (a.equip.ilvl !== b.equip.ilvl) {
-                return (b.equip.ilvl || 0) - (a.equip.ilvl || 0);
-            }
-            return (b.equip.id || 0) - (a.equip.id || 0);
-        });
-    }
+            } else if (bagSortMode === 'ilvl') {
+            // 按物品等级降序，同级按id降序（新获取的在前）
+            filteredWithIndex.sort((a, b) => {
+                if (a.equip.ilvl !== b.equip.ilvl) {
+                    return (b.equip.ilvl || 0) - (a.equip.ilvl || 0);
+                }
+                return (b.equip.id || 0) - (a.equip.id || 0);
+            });
+        }
 
-    // ★ 新增：生成装备格 HTML
-    bagWrap.innerHTML = filteredWithIndex.map(({ equip, idx }) => {
-        const rClass = getRarityClass(equip.rarityName);
-        const enhanceStr = equip.enhanceLevel
-            ? `<span class="enhance-badge">+${equip.enhanceLevel}</span>`
-            : '';
-        const lockIcon = equip.locked
-            ? '<span class="bag-lock-icon">🔒</span>'
-            : '';
-        return `<div class="bag-item ${rClass}" data-index="${idx}" style="position:relative;">
-            ${equip.name}${enhanceStr}
-            ${lockIcon}
-        </div>`;
-    }).join('');
+        // ★ 生成背包HTML（只显示图标+悬浮强化等级）
+        bagWrap.innerHTML = filteredWithIndex.map(({ equip, idx }) => {
+            const rClass = getRarityClass(equip.rarityName);
+            const enhanceBadge = equip.enhanceLevel
+                ? `<span class="enhance-badge-hover">+${equip.enhanceLevel}</span>`
+                : '';
+            const lockIcon = equip.locked
+                ? '<span class="bag-lock-icon">🔒</span>'
+                : '';
+            const dc = getRarityDisplayColor(equip.rarityName);
+            const iconUrl = getEquipIcon(equip);
+            return `<div class="bag-item ${rClass}" data-index="${idx}" style="position:relative;background-color:${dc.bg};border-color:${dc.border};">
+                <img src="${iconUrl}" alt="${equip.name}" style="width:100%;height:100%;object-fit:contain;">
+                ${enhanceBadge}
+                ${lockIcon}
+            </div>`;
+        }).join('');
+
+        // 给每个背包装备绑定点击弹窗事件（使用原始索引）
 
     // 给每个背包装备绑定点击弹窗事件（使用原始索引）
     bagWrap.querySelectorAll('.bag-item').forEach(item => {
@@ -980,7 +1022,7 @@ function buildQualityConfigHtml(configCache) {
         const ilvlMinVal = config.ilvlMin;
         const ilvlMaxVal = config.ilvlMax;
 
-        const affixCountOptions = ['不限制', '1个', '2个', '3个', '4个', '5个', '6个'];
+        const affixCountOptions = ['0个', '1个', '2个', '3个', '4个', '5个', '6个'];
         const currentCountLabel = config.affixCount === 0 ? '' : config.affixCount + '个';
 
         const affixTierOptions = [];
@@ -1462,7 +1504,7 @@ function showChestOpenToastExtra(text) {
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 16px 24px;
-        
+        width: 260px;
         z-index: 99999;
         white-space: pre-line;
         text-align: center;

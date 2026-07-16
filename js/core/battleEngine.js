@@ -709,6 +709,11 @@ window.setGameSpeed = function(speed) {
     const save = getSaveData();
     // 只有战斗运行中才需要重建定时器
     if (!save.isBattleRunning) return;
+    // 修复：战斗标记已运行但怪物尚未生成时，跳过定时器重建
+    if (!currentMonster) {
+        console.warn('setGameSpeed: currentMonster 未初始化，跳过定时器重建');
+        return;
+    }
 
     // 清除当前所有定时器
     clearInterval(playerAttackTimer);

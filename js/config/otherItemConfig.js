@@ -14,7 +14,7 @@ window.OTHER_ITEM_CONFIG = {
     soul_shard_small: {
         id: 'soul_shard_small',
         type: window.OTHER_ITEM_TYPE.ENHANCEMENT_MATERIAL,
-        name: '灵魂碎晶（小）',
+        name: '灵魂碎晶小',
         description: '蕴含微弱灵魂力量的碎片，用于1-3阶装备+6到+10强化。',
         maxStack: 99,
         category: '强化材料',
@@ -24,7 +24,7 @@ window.OTHER_ITEM_CONFIG = {
     soul_shard_medium: {
         id: 'soul_shard_medium',
         type: window.OTHER_ITEM_TYPE.ENHANCEMENT_MATERIAL,
-        name: '灵魂碎晶（中）',
+        name: '灵魂碎晶中',
         description: '蕴含中等灵魂力量的碎片，用于4-6阶装备+6到+10强化。',
         maxStack: 99,
         category: '强化材料',
@@ -34,7 +34,7 @@ window.OTHER_ITEM_CONFIG = {
     soul_shard_large: {
         id: 'soul_shard_large',
         type: window.OTHER_ITEM_TYPE.ENHANCEMENT_MATERIAL,
-        name: '灵魂碎晶（大）',
+        name: '灵魂碎晶大',
         description: '蕴含强大灵魂力量的碎片，用于7-9阶装备+6到+10强化。',
         maxStack: 99,
         category: '强化材料',
@@ -44,7 +44,7 @@ window.OTHER_ITEM_CONFIG = {
     soul_shard_complete: {
         id: 'soul_shard_complete',
         type: window.OTHER_ITEM_TYPE.ENHANCEMENT_MATERIAL,
-        name: '灵魂碎晶（完整）',
+        name: '灵魂碎晶完整',
         description: '蕴含完整灵魂力量的结晶，用于10-12阶装备+6到+10强化。',
         maxStack: 99,
         category: '强化材料',

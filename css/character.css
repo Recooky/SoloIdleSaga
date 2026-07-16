@@ -107,7 +107,7 @@
     background: #1e293b;
     width: 45px;
     height: 45px;
-    border: 1px dashed #64748b;
+    border: 1px solid #8d604d;
     border-radius: 6px;
     cursor: pointer;
     display: flex;
@@ -1004,3 +1004,19 @@
     gap: 4px;
 }
 
+/* ========== 强化等级徽章 - 土黄色文字 + 棕色边框，位于右下角 ========== */
+.enhance-badge-hover {
+    position: absolute;
+    bottom: 0px;        /* 与右下角距离 */
+    right: 0px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #f9cf69;      
+    -webkit-text-stroke: 0.5px #5c2d13; 
+    border-radius: 3px;
+    padding: 0 3px;
+    line-height: 1.4;
+    z-index: 10;          /* 确保在图标上方 */
+    pointer-events: none;  /* 不干扰点击事件 */
+    
+}

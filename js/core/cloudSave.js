@@ -109,7 +109,7 @@ function startAutoSync() {
         const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         await syncLocalToCloudInternal();
-    }, 20000);
+    }, 60000);
 }
 
 // 初始化登录弹窗事件只执行一次

@@ -397,7 +397,7 @@ function getMonsterAttrByLevelWithQuality(level, wave, region, qualityIdx) {
     }
 
     const monsterConfig = pool[Math.floor(Math.random() * pool.length)];
-    const GROWTH_RATE = 0.15; // 每关怪物成长增加指数 18%/关
+    const GROWTH_RATE = 0.10; // 每关怪物成长增加指数 18%/关
     const growMulti = Math.pow(1 + GROWTH_RATE, level - 1);
 
     // 计算最终属性 = 配置基础值 × 关卡成长倍率
