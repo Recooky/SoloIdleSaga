@@ -2,7 +2,7 @@ name: Build WebGame APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # 手动一键打包
+  workflow_dispatch:
 
 jobs:
   build:
@@ -28,7 +28,6 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      # 注入安卓SDK环境变量，Cordova编译必备
       - name: 导出SDK环境变量
         run: |
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
@@ -49,37 +48,25 @@ jobs:
         run: |
           cd game-apk
           mkdir -p res/android
-          # 判断仓库存在图标再复制，不存在不中断打包
           if [ -f ../../app-icon/icon.png ]; then
             cp ../../app-icon/icon.png res/android/icon.png
             echo '<icon src="res/android/icon.png" density="xxxhdpi" />' >> config.xml
           fi
-          # 全局允许所有域名、支持HTTP明文访问
-          cat >> config.xml <<'EOF'
-<access origin="*" />
-<edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
-    <application android:usesCleartextTraffic="true" />
-</edit-config>
-EOF
+          echo '<access origin="*" />' >> config.xml
+          echo '<edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">' >> config.xml
+          echo '    <application android:usesCleartextTraffic="true" />' >> config.xml
+          echo '</edit-config>' >> config.xml
 
       - name: 内置跳转页面，加载网页游戏
         run: |
           cd game-apk/www
-          cat > index.html <<'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>SoloIdleSaga</title>
-</head>
-<body>
-<script>
-const GAME_URL = "https://recooky.github.io/SoloIdleSaga/";
-window.location.href = GAME_URL;
-</script>
-</body>
-</html>
-EOF
+          echo '<!DOCTYPE html>' > index.html
+          echo '<html>' >> index.html
+          echo '<head><meta charset="utf-8"><title>SoloIdleSaga</title></head>' >> index.html
+          echo '<body><script>' >> index.html
+          echo 'const GAME_URL = "https://recooky.github.io/SoloIdleSaga/";' >> index.html
+          echo 'window.location.href = GAME_URL;' >> index.html
+          echo '</script></body></html>' >> index.html
 
       - name: 编译 Debug 未签名APK
         run: |
