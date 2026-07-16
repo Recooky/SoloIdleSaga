@@ -426,7 +426,7 @@ function initBattleModule() {
     const save = getSaveData();
     const stageDom = document.getElementById('stageInfo');
     const waveDom = document.getElementById('waveInfo');
-    if (waveDom) waveDom.textContent = `波次：${save.currentWave}/5`;
+    if (waveDom) waveDom.textContent = `进度：${save.currentWave}/5`;
     renderStageGrid();
 
     // 关卡区域 TAB 切换事件
@@ -675,7 +675,7 @@ function initBattleModule() {
         const save = getSaveData();
         const stageDom = document.getElementById('stageInfo');
         const waveDom = document.getElementById('waveInfo');
-        if (waveDom) waveDom.textContent = `波次：${save.currentWave}/5`;
+        if (waveDom) waveDom.textContent = `进度：${save.currentWave}/5`;
         refreshCharacterPanel();
         // 通关后刷新关卡选择器（解锁新关卡、更新置灰状态）
         renderStageGrid();
