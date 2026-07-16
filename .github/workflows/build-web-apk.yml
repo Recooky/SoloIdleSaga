@@ -81,7 +81,7 @@ jobs:
           sed -i '/<platform name="android">/a \ \ \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n        <application android:usesCleartextTraffic="true" />\n      <\/edit-config>' config.xml
           sed -i '/<platform name="android">/a \ \ \ \ <allow-navigation href="https://recooky.github.io/*" />' config.xml
           
-          # ========== 2. 配置图标（使用绝对路径确保找到图标） ==========
+          # ========== 2. 配置图标（简化版，避免 ImageMagick 语法问题） ==========
           ICON_SOURCE="${{ github.workspace }}/app-icon/icon.png"
           
           if [ -f "$ICON_SOURCE" ]; then
@@ -91,25 +91,22 @@ jobs:
             mkdir -p platforms/android/app/src/main/res
             
             # 定义需要生成的尺寸
-            declare -A sizes=(
-              ["mipmap-mdpi"]="48"
-              ["mipmap-hdpi"]="72"
-              ["mipmap-xhdpi"]="96"
-              ["mipmap-xxhdpi"]="144"
-              ["mipmap-xxxhdpi"]="192"
-            )
+            sizes=("48" "72" "96" "144" "192")
+            dirs=("mipmap-mdpi" "mipmap-hdpi" "mipmap-xhdpi" "mipmap-xxhdpi" "mipmap-xxxhdpi")
             
-            # 生成普通图标和圆形图标
-            for dir in "${!sizes[@]}"; do
-              size=${sizes[$dir]}
+            # 循环生成图标
+            for i in "${!sizes[@]}"; do
+              size=${sizes[$i]}
+              dir=${dirs[$i]}
               target_dir="platforms/android/app/src/main/res/$dir"
               mkdir -p "$target_dir"
               
-              # 生成普通图标
+              # 生成普通图标（直接缩放）
               convert "$ICON_SOURCE" -resize ${size}x${size} "$target_dir/ic_launcher.png"
-              # 生成圆形图标
+              
+              # 生成圆形图标（使用 mask 方式，更兼容）
               convert "$ICON_SOURCE" -resize ${size}x${size} \
-                \( +clone -threshold 0 -negate -fill white -draw "circle ${size}/2,${size}/2 ${size}/2,0" \) \
+                \( -size ${size}x${size} xc:black -fill white -draw "ellipse $((size/2)),$((size/2)) $((size/2)),$((size/2)) 0,360" \) \
                 -alpha off -compose copy_opacity -composite "$target_dir/ic_launcher_round.png"
               
               echo "生成 $dir (${size}x${size})"
