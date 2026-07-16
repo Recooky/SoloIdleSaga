@@ -12,7 +12,7 @@
 .forge-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 70px;
     margin-bottom: 12px;
     border-bottom: 1px solid #4a2c11;
     border-radius: 8px 8px 0 0;
@@ -21,7 +21,7 @@
 
 .forge-back-btn {
     width: 66px;
-    height: 36px;
+    height: 30px;
     padding: 0;
     display: flex;
     align-items: center;
@@ -31,7 +31,7 @@
     border: 0px solid #4a2c11;
     color: #4a2c11;
     cursor: pointer;
-    flex-shrink: 0; /* 防止被压缩 */
+    flex-shrink: 0;
 }
 
 .forge-title {
@@ -42,12 +42,11 @@
     position: relative;
 }
 
-
 /* Tab切换栏 */
 .forge-tabs {
     display: flex;
-    gap: 8px;                 /* 去掉固定 gap，因为 flex:1 会自动分配间隙 */
-    padding: 0px 12px;         /* 去掉固定左内边距 */
+    gap: 8px;
+    padding: 0px 12px;
     margin-bottom: -2px;
     position: relative;
     z-index: 10;
@@ -55,10 +54,10 @@
 }
 
 .forge-tab {
-    flex: 1;                /* ← 关键：每个 TAB 等宽 */
+    flex: 1;
     text-align: center;
-    justify-content: center; /* 内部内容水平居中 */
-    padding: 6px 0;          /* 左右内边距设为 0，让 flex 控制宽度 */
+    justify-content: center;
+    padding: 6px 0;
     background: #EAC3A3;
     border: 2px solid #D5AB88;
     border-bottom: 2px solid transparent;
@@ -78,35 +77,35 @@
     background: rgba(255,255,255,0.05);
 }
 .forge-tab.active {
-    background: none; /* 奶白偏暖的主背景色 */
+    background: none;
     border: 2px solid #D5AB88;   
     border-bottom-width: 3px; 
     border-bottom-color: #fdf8e5; 
-    top: 1px;                               /* 向下 1px */
-    margin-bottom: -1px;  
-    /* 确保活动状态的层级最高，能压住内容区的上边框 */
-    z-index: 20; 
+    top: 1px;
+    margin-bottom: -1px;
+    z-index: 20;
     color: #5D2915;
     font-weight:600;
 }
-
 
 @keyframes tabGlow {
     0%   { opacity: 0.6; }
     100% { opacity: 1; }
 }
 
+/* ========== 面板布局 ========== */
 .forge-panel {
     display: none;
     flex: 1;
-    overflow-y: auto;
+    overflow: hidden;           /* 防止整体滚动 */
+    flex-direction: column;
+    min-height: 0;
 }
 .forge-panel.active {
     display: flex;
-    flex-direction: column;
 }
 
-/* 功能开发中 */
+/* 功能开发中（面板覆盖） */
 .forge-coming-soon {
     display: flex;
     flex-direction: column;
@@ -120,12 +119,10 @@
     border: 1px solid rgba(148,163,184,0.15);
     border-radius: 12px;
     backdrop-filter: blur(4px);
-    margin: 0 8px 12px 8px;
+    margin: 20px 8px 12px 8px;
     position: relative;
     overflow: hidden;
 }
-
-/* 装饰性光晕 */
 .forge-coming-soon::before {
     content: '';
     position: absolute;
@@ -140,8 +137,6 @@
     0%   { transform: scale(1); opacity: 0.4; }
     100% { transform: scale(1.05); opacity: 0.8; }
 }
-
-/* 图标 + 文字容器（JS 渲染时包裹） */
 .forge-coming-soon-inner {
     position: relative;
     z-index: 1;
@@ -161,7 +156,6 @@
     font-weight: 500;
     position: relative;
 }
-/* 打点动画 */
 .forge-coming-soon .coming-soon-text::after {
     content: '...';
     animation: dotDotDot 1.8s steps(4, end) infinite;
@@ -172,15 +166,51 @@
     50%  { content: '..'; }
     75%  { content: '...'; }
 }
-/* 小提示文本 */
 .forge-coming-soon .coming-soon-hint {
     color: #475569;
     font-size: 12px;
     margin-top: 4px;
 }
 
-/* 装备属性展示区 */
-/* ========== 左右对比容器 ========== */
+/* ========== 装备卡片展示区 ========== */
+.forge-compare-wrap {
+    flex: 1;                    /* 占据剩余空间，可滚动 */
+    overflow-y: auto;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+    padding-bottom: 12px;
+}
+
+.forge-compare-col {
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ★ 关键：让 equip-tip-box 内部可滚动 */
+.forge-compare-col .equip-tip-box {
+    width: 90%;
+    max-width: none;
+    padding: 14px 12px;
+    max-height: 50vh;           /* 限制最大高度，超出的内容滚动 */
+    overflow-y: auto;
+}
+
+/* 分隔线样式（确保显示） */
+#forgePanelEnhance .equip-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #D5AB88, transparent);
+    margin: 8px 0;            /* 稍微加大间距，更明显 */
+    border: none;
+    flex-shrink: 0;           /* 防止在 flex 中被压缩 */
+    display: block;   
+}
+
+/* ========== 属性行样式 ========== */
 .forge-equip {
     display: flex;
     justify-content: space-between;
@@ -190,33 +220,26 @@
     color: #4a2c11;
     gap: 6px;
 }
-
-/* 名称区域（含 T阶+词缀名）固定宽度 */
 .forge-equip-name {
     flex: 0 0 80px;
-    display: inline-flex;      /* 使 gap 生效 */
+    display: inline-flex;
     align-items: center;
-    gap: 6px;                 /* 你可以改成任意像素，如 8px */
+    gap: 6px;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-/* 词缀名文字，可设置颜色继承，并参与截断 */
 .forge-equip-label {
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #4a2c11;           /* 与基础属性名称颜色一致 */
+    color: #4a2c11;
 }
-
-/* 数值区域占剩余空间 */
 .forge-equip-value {
     flex: 1;
     color: #4a2c11;
     font-weight: 500;
 }
-/* 强化增益行 — 整体绿色 */
 .forge-equip.forge-bonus-item {
     color: #22c55e;
 }
@@ -224,33 +247,8 @@
 .forge-equip.forge-bonus-item .forge-equip-value {
     color: #22c55e;
 }
-.forge-compare-wrap {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-    align-items: center;
-}
 
-.forge-compare-col {
-    flex: 1;
-    min-width: 0;       /* 防止溢出 */
-    display: flex;
-    flex-direction: column;
-}
-
-/* 复用 equip-tip-box 样式，但调整宽度和内边距 */
-.forge-compare-col .equip-tip-box {
-    width: 100%;
-    max-width: none;
-    min-height: 0;
-    max-height: none;
-    padding: 10px 8px;
-}
-
-/* 右侧预览卡片头部增加"强化预览"标记 */
+/* "当前装备" 徽章 */
 .forge-preview-badge {
     font-size: 11px;
     color: #fbbf24;
@@ -261,35 +259,17 @@
     margin-left: 6px;
 }
 
-/* 对比差异高亮 */
-.forge-attr-diff {
-    color: #22c55e;
-    font-weight: 600;
-}
-
-/* 强化增益显示（绿色 + 号） */
-.forge-bonus-item {
-    color: #22c55e;
-    font-size: 12px;
-    padding: 2px 0 2px 6px;
-}
-
-/* 数值变化箭头指示 */
-.forge-stat-change {
-    font-size: 11px;
-    margin-left: 4px;
-}
-
-/* 操作区域 */
+/* ========== 强化操作区（固定底部） ========== */
 .forge-action-area {
-    padding: 30px;
-    margin-top: auto;
-    background: #fdf8e5; 
-    border: 2px solid #D5AB88;
+    flex-shrink: 0;             /* 不被压缩 */
+    padding: 20px 24px;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto 12px auto;
+    box-sizing: border-box;
     border-radius: 14px;
 }
 
-/* 统一的网格行布局 */
 .forge-action-row {
     display: grid;
     grid-template-columns: 130px 1fr;
@@ -298,47 +278,34 @@
     color: #4a2c11;
     align-items: center;
 }
-
-/* 左列：标签右对齐 */
 .forge-action-row .row-label {
     display: flex;
-    justify-content: flex-end;   /* 让内部的文本靠右，冒号固定在右侧 */
+    justify-content: flex-end;
     align-items: center;
     gap: 0px;
     padding-right: 12px;
     white-space: nowrap;
 }
-
-/* 标签文本部分：右对齐，与冒号紧贴 */
 .forge-action-row .row-label-text {
     text-align: right;
 }
-
-/* 冒号独立：固定宽度确保所有行冒号对齐在同一垂直线上 */
 .forge-action-row .row-label-colon {
     display: inline-block;
-    width: 12px;                /* 固定宽度，冒号在这 12px 中居左或居中 */
+    width: 12px;
     text-align: left;
 }
-
-/* 右列：数值居中对齐 */
 .forge-action-row .row-value {
     text-align: center;
     font-weight: 600;
-    font-family: "Courier New", "Consolas", monospace;  /* 等宽字体 */
-    letter-spacing: 1px;   /* 可选，微调间距 */
+    font-family: "Courier New", "Consolas", monospace;
+    letter-spacing: 1px;
 }
-
-/* 成功率数值默认绿色 */
 .forge-action-row.success-rate .row-value {
     color: #22c55e;
 }
-
-/* 材料行特殊样式 */
 .forge-material-cost .forge-action-row {
     padding-top: 0;
 }
-
 .forge-success-rate,
 .forge-gold-cost {
     display: flex;
@@ -347,16 +314,13 @@
     font-size: 14px;
     color: #cbd5e1;
 }
-
 .forge-success-rate span:last-child {
     color: #22c55e;
     font-weight: 600;
 }
-
 .forge-gold-cost span:last-child {
     font-weight: 600;
 }
-
 .forge-material-cost {
     padding: 6px 0;
     padding-top: 8px;
@@ -383,15 +347,4 @@
     background: #475569;
     color: #94a3b8;
     cursor: not-allowed;
-}
-
-/* 装备详情弹窗中的"打造"按钮 */
-.btn-forge {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    border: none;
-    color: #1e293b;
-    font-weight: 700;
-}
-.btn-forge:hover {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
 }

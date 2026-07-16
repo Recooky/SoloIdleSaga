@@ -13,22 +13,17 @@
         <span class="forge-tab" data-forge-tab="socket">打孔</span>
         <span class="forge-tab" data-forge-tab="gem">镶嵌</span>
     </div>
+
     <!-- 强化面板 -->
     <div class="forge-panel active" id="forgePanelEnhance">
-        <!-- 上半部分：左右对比 -->
+        <!-- 装备展示区（可滚动） -->
         <div class="forge-compare-wrap">
-            <!-- 左侧：当前装备 -->
-            <div class="forge-compare-col" id="forgeCurrentStats">
-                <!-- 动态渲染当前装备卡片 -->
-            </div>
-            <div class="forge-arrow">→</div>
-            <!-- 右侧：强化预览 -->
-            <div class="forge-compare-col" id="forgeNextStats">
-                <!-- 动态渲染强化后预览卡片 -->
+            <div class="forge-compare-col" id="forgeEquipDisplay">
+                <!-- 动态渲染装备卡片 -->
             </div>
         </div>
         
-        <!-- 下半部分：强化操作 -->
+        <!-- 强化操作区（固定底部） -->
         <div class="forge-action-area">
             <div class="forge-action-row success-rate">
                 <span class="row-label">
@@ -50,7 +45,8 @@
             <button class="forge-enhance-btn" id="forgeEnhanceBtn">强化</button>
         </div>
     </div>
-    <!-- 改造面板 -->
+
+    <!-- 改造面板（不变） -->
     <div class="forge-panel" id="forgePanelReform">
         <div class="forge-coming-soon">
             <div class="forge-coming-soon-inner">
@@ -61,7 +57,7 @@
         </div>
     </div>
 
-    <!-- 打孔面板 -->
+    <!-- 打孔面板（不变） -->
     <div class="forge-panel" id="forgePanelSocket">
         <div class="forge-coming-soon">
             <div class="forge-coming-soon-inner">
@@ -72,7 +68,7 @@
         </div>
     </div>
 
-    <!-- 镶嵌面板 -->
+    <!-- 镶嵌面板（不变） -->
     <div class="forge-panel" id="forgePanelGem">
         <div class="forge-coming-soon">
             <div class="forge-coming-soon-inner">

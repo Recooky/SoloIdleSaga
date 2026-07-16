@@ -100,7 +100,11 @@
 <!-- 全局Loading遮罩 -->
 <div id="loadingMask">
     <div class="loading-spin"></div>
-    游戏资源加载中...
+    <div id="progressLabel">游戏资源加载中... <span id="progressPercent">0%</span></div>
+    <div id="progressBarContainer" style="width:80%;max-width:400px;height:8px;background:#1e293b;border-radius:4px;margin-top:16px;overflow:hidden;">
+        <div id="progressBarFill" style="width:0%;height:100%;background:linear-gradient(90deg, #ffd700, #ffaa00);border-radius:4px;transition:width 0.2s linear;"></div>
+    </div>
+    <div id="progressDetail" style="color:#94a3b8;font-size:12px;margin-top:8px;"></div>
 </div>
 
 <!-- 登录弹窗放在刷新容器外部，不参与局部刷新 -->
@@ -219,15 +223,77 @@
     </div>
 </div>  
 
+    <!-- 大地图选择弹窗（初始隐藏） -->
+    <div id="zonePopup" class="modal-overlay" style="display:none;">
+        <div class="zone-popup-box">
+            <div class="zone-popup-bg"></div> 
+            <div id="zoneList" class="zone-List"></div>
+        </div>
+    </div>
+
+    <!-- ========== 版本更新弹窗（新增） ========== -->
+    <div id="updateModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box update-modal-box">
+            <h3 id="updateVersionTitle" style="margin:0 0 16px 0;color:#4a2c11;font-size:20px;">
+                🎉 新版本 V<span id="updateVersionNum"></span> 来了！
+            </h3>
+            <div id="updateChangelogContent" class="update-changelog-box"
+                 style="white-space: pre-line;max-height: 320px;overflow-y: auto;"></div>
+            <div class="tip-btn-group" style="margin-top:20px;">
+                <button id="updateConfirmBtn" class="tip-btn btn-wear" style="flex:1;">🚀 立即更新</button>
+                <button id="updateCancelBtn" class="tip-btn btn-close" style="flex:1;">⏰ 稍后再说</button>
+            </div>
+        </div>
+    </div>
+
 <!-- 注册 Service Worker（用于缓存图片等静态资源） -->
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('SW registered:', reg.scope))
-        .catch(err => console.warn('SW registration failed:', err.message));
-    });
+    // 注册 SW
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        console.log('SW registered:', reg.scope);
+        
+        // 监听来自 SW 的消息
+        navigator.serviceWorker.addEventListener('message', event => {
+          const data = event.data;
+          if (data && data.type === 'CACHE_PROGRESS') {
+            const percent = Math.round((data.loaded / data.total) * 100);
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('progressBarFill').style.width = percent + '%';
+            document.getElementById('progressDetail').textContent = 
+              '已缓存 ' + data.loaded + ' / ' + data.total + ' 张图片';
+            
+            if (data.loaded >= data.total) {
+              document.getElementById('progressLabel').textContent = '资源加载完成！即将进入游戏...';
+              // 延时隐藏遮罩
+              setTimeout(() => {
+                document.getElementById('loadingMask').style.display = 'none';
+              }, 500);
+            }
+          }
+        });
+
+        // 检查 SW 是否已经在激活状态并且有缓存
+        if (reg.active) {
+          // 可能缓存已存在，直接隐藏遮罩（略等一小会）
+          // 但为了统一，还是等消息
+        }
+      })
+      .catch(err => {
+        console.warn('SW registration failed:', err.message);
+        // 如果 SW 注册失败，降级：直接显示页面
+        setTimeout(() => {
+          document.getElementById('loadingMask').style.display = 'none';
+        }, 1000);
+      });
+  } else {
+    // 不支持 SW 的浏览器，直接显示页面
+    setTimeout(() => {
+      document.getElementById('loadingMask').style.display = 'none';
+    }, 1000);
   }
 </script>
+
 </body>
 </html>

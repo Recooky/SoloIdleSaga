@@ -12,7 +12,7 @@ async function loadPanelTemplate(name) {
         container.innerHTML = html;
     } catch (err) {
         console.warn(`面板 "${name}" 加载失败，使用默认占位:`, err.message);
-        container.innerHTML = `<h2 style="color:#ffd700;font-size:22px;">${name}</h2><p style="color:#94a3b8;text-align:center;padding:40px 0;">加载中...</p>`;
+        container.innerHTML = `<h2 style="color:#4a2c11;font-size:22px;">${name}</h2><p style="color:#94a3b8;text-align:center;padding:40px 0;">加载中...</p>`;
     }
 }
 
@@ -101,7 +101,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             setSaveData(save);
             updateAccountDisplay();
             if (editModal) editModal.style.display = 'none';
-            alert('昵称已保存');
         });
     }
 

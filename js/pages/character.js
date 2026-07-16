@@ -43,9 +43,9 @@ const ATTR_DISPLAY_CONFIG = {
     mp:          { label: '魔力',      format: val => smartFormat(val, 1), show: false,  group: '基础属性' },
     hpRegen:     { label: '生命恢复',  format: val => smartFormat(val, 1), show: false, group: '基础属性' },
     mpRegen:     { label: '魔力恢复',  format: val => smartFormat(val, 1), show: false, group: '基础属性' },
-    str:         { label: '力量',    format: val => smartFormat(val, 1), show: false, group: '基础属性' },
-    agi:         { label: '敏捷',    format: val => smartFormat(val, 1), show: false, group: '基础属性' },
-    int:         { label: '智慧',    format: val => smartFormat(val, 1), show: false, group: '基础属性' },
+    str:         { label: '力量 (0.5%攻击、1生命恢复)',    format: val => smartFormat(val, 1), show: false, group: '基础属性' },
+    agi:         { label: '敏捷 (0.5%攻速、5命中)',    format: val => smartFormat(val, 1), show: false, group: '基础属性' },
+    int:         { label: '智慧 (0.2%元素伤、1魔力恢复)',    format: val => smartFormat(val, 1), show: false, group: '基础属性' },
     // 防御属性
     def:         { label: '护甲',      format: val => smartFormat(val, 1), show: true,  group: '防御属性' },
     dodge:       { label: '闪避',      format: val => smartFormat(val, 1), show: true,  group: '防御属性' },
@@ -344,10 +344,37 @@ function renderBagList() {
             </div>`;
         }).join('');
 
-        // 给每个背包装备绑定点击弹窗事件（使用原始索引）
+        // ★ 生成背包HTML（只显示图标+悬浮强化等级）
+        const MAX_SLOTS = 30; // 3行×6列，可根据实际容器高度调整
+
+        let html = filteredWithIndex.map(({ equip, idx }) => {
+            const rClass = getRarityClass(equip.rarityName);
+            const enhanceBadge = equip.enhanceLevel
+                ? `<span class="enhance-badge-hover">+${equip.enhanceLevel}</span>`
+                : '';
+            const lockIcon = equip.locked
+                ? '<span class="bag-lock-icon">🔒</span>'
+                : '';
+            const dc = getRarityDisplayColor(equip.rarityName);
+            const iconUrl = getEquipIcon(equip);
+            return `<div class="bag-item ${rClass}" data-index="${idx}" style="position:relative;background-color:${dc.bg};border-color:${dc.border};">
+                <img src="${iconUrl}" alt="${equip.name}" style="width:100%;height:100%;object-fit:contain;">
+                ${enhanceBadge}
+                ${lockIcon}
+            </div>`;
+        }).join('');
+
+        // ★ 补充空槽位（固定显示格子）
+        const currentCount = filteredWithIndex.length;
+        const placeholderCount = Math.max(0, MAX_SLOTS - currentCount);
+        for (let i = 0; i < placeholderCount; i++) {
+            html += `<div class="bag-item bag-item-empty"></div>`;
+        }
+        bagWrap.innerHTML = html;
 
     // 给每个背包装备绑定点击弹窗事件（使用原始索引）
-    bagWrap.querySelectorAll('.bag-item').forEach(item => {
+    // 给每个背包装备（非空）绑定点击弹窗事件
+    bagWrap.querySelectorAll('.bag-item:not(.bag-item-empty)').forEach(item => {
         item.onclick = () => {
             const idx = Number(item.dataset.index);
             showEquipTip(save.bag[idx], null, idx);
@@ -394,17 +421,26 @@ function renderOtherItemsList(save, wrap) {
         return rarityConfig ? rarityConfig.color : '#ffffff';
     }
 
-    wrap.innerHTML = displayList.map((item, idx) => {
+    const MAX_SLOTS = 30;
+
+    let html = displayList.map((item, idx) => {
         const config = window.OTHER_ITEM_CONFIG[item.cfgId];
         const color = getRarityColor(config.rarity);
         const displayName = item.stackCount > 1 
             ? `${config.name} x ${item.stackCount}`
             : config.name;
-
         return `<div class="bag-item other-item" data-cfgid="${item.cfgId}" data-stackcount="${item.stackCount}" data-total="${item.totalCount}">
             <span style="color: ${color};">${displayName}</span>
         </div>`;
     }).join('');
+
+    // 补充空槽位
+    const currentCount = displayList.length;
+    const placeholderCount = Math.max(0, MAX_SLOTS - currentCount);
+    for (let i = 0; i < placeholderCount; i++) {
+        html += `<div class="bag-item bag-item-empty"></div>`;
+    }
+    wrap.innerHTML = html;
 
     wrap.querySelectorAll('.bag-item.other-item').forEach(el => {
         el.onclick = function() {
@@ -897,7 +933,7 @@ function showEquipTip(equip, wearPos, bagIndex) {
             setSaveData(save);
             refreshCharacterPanel();
             container.remove();
-            showToast(`出售装备获得 ${price} 金币`);
+            showCenterToast(`出售装备获得 ${price} 金币`);
         };
         document.getElementById('forgeEquip').onclick = () => {
             container.remove();
@@ -952,7 +988,7 @@ function showEquipTip(equip, wearPos, bagIndex) {
             setSaveData(save);
             refreshCharacterPanel();
             modal.remove();
-            showToast(`出售装备获得 ${price} 金币`);
+            showCenterToast(`出售装备获得 ${price} 金币`);
         };
         modal.addEventListener('click', function(e) {
             if (e.target === this) this.remove();
@@ -1311,9 +1347,9 @@ function openBatchSellModal() {
         modal.remove();
         refreshCharacterPanel();
         if (soldCount > 0) {
-            showToast(`成功出售 ${soldCount} 件装备，获得 ${totalGold} 金币`);
+            showCenterToast(`成功出售 ${soldCount} 件装备\n获得 ${totalGold} 金币`);
         } else {
-            showToast('没有符合出售条件的装备');
+            showCenterToast('没有符合出售条件的装备');
         }
     };
 }
@@ -1553,6 +1589,63 @@ function showChestOpenToastExtra(text) {
                 10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
                 75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
                 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+
+/**
+ * 居中 Toast 弹窗（用于出售金币等需要强调的提示，与宝箱弹窗风格一致）
+ * @param {string} text 显示文本
+ * @param {number} duration 显示时长（毫秒，默认2500）
+ */
+function showCenterToast(text, duration = 2500) {
+    const toastDiv = document.createElement('div');
+    toastDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 16px 24px;
+        width: 240px;
+        z-index: 99999;
+        white-space: pre-line;
+        text-align: center;
+        line-height: 1.6;
+        font-size: 14px;
+        border-radius: 12px;
+        box-shadow:
+            inset 0 3px 0 rgba(255, 255, 255, 0.8),
+            0 8px 16px rgba(123, 92, 77, 0.15);
+        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        border: 3px solid #7B5C4D;
+        background-color: #fdf4e9;
+        color: #5D4037;
+        letter-spacing: 1px;
+    `;
+    toastDiv.textContent = text;
+    document.body.appendChild(toastDiv);
+    
+    // 添加淡入动画
+    toastDiv.style.animation = 'centerToastFadeIn 0.3s ease forwards';
+    
+    // 自动移除
+    setTimeout(() => {
+        toastDiv.style.transition = 'opacity 0.5s ease';
+        toastDiv.style.opacity = '0';
+        setTimeout(() => toastDiv.remove(), 500);
+    }, duration);
+    
+    // 添加动画 keyframes（只添加一次）
+    if (!document.querySelector('#centerToastKeyframes')) {
+        const style = document.createElement('style');
+        style.id = 'centerToastKeyframes';
+        style.textContent = `
+            @keyframes centerToastFadeIn {
+                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             }
         `;
         document.head.appendChild(style);

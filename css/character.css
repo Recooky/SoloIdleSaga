@@ -104,10 +104,10 @@
 }
 /* 背包物品格子 */
 .bag-item {
-    background: #1e293b;
+    background: rgba(239, 209, 183, 0.3);
     width: 45px;
     height: 45px;
-    border: 1px solid #8d604d;
+    border: 1px dashed #8d604d;
     border-radius: 6px;
     cursor: pointer;
     display: flex;
@@ -138,7 +138,6 @@
     border: 2px solid #D5AB88;
     border-radius: 14px;
     padding: 10px 10px;
-    width: 70%;
 }
 
 /* 暗纹装饰（微光晕边框） */
@@ -291,6 +290,8 @@
 }
 
 .tip-btn {
+    background:#f97316;
+    color: #ffffff;
     padding: 4px 8px;
     border: none;
     border-radius: 4px;
@@ -601,7 +602,7 @@
 
 .all-attr-name {
     color: #4a2c11;
-    flex: 0 0 170px;
+    flex: 0 0 190px;
 }
 
 .all-attr-value {
@@ -1017,6 +1018,12 @@
     padding: 0 3px;
     line-height: 1.4;
     z-index: 10;          /* 确保在图标上方 */
-    pointer-events: none;  /* 不干扰点击事件 */
-    
+    pointer-events: none;  /* 不干扰点击事件 */   
+}
+
+/* 背包空槽位占位格子 */
+.bag-item-empty {
+    cursor: default;
+    pointer-events: none;  /* 禁止点击 */
+    opacity: 0.6;
 }

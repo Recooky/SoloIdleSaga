@@ -1,35 +1,90 @@
-const CACHE_NAME = 'solo-idle-saga-v1';
+// sw.js - 全量预缓存方案
 
-// 安装时预缓存核心资源（可选）
+const CACHE_NAME = 'solo-idle-saga-v' + new Date().toISOString().slice(0,10);
+// 或者用固定名称+版本后缀：'solo-idle-saga-v2'，但用日期更方便自动版本管理
+// 为了精确控制，建议使用 manifest.json 中的 version
+// 这里改为从 manifest.json 中读取 version 来构造缓存名
+
+let expectedCacheName = '';
+
 self.addEventListener('install', event => {
-  self.skipWaiting();
-});
-
-// 激活后清理旧缓存
-self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-    ))
+    (async () => {
+      // 1. 获取图片清单
+      const resp = await fetch('/assets/images/manifest.json');
+      const manifest = await resp.json();
+      
+      // 根据 manifest 版本号构造缓存名
+      expectedCacheName = 'solo-idle-saga-' + manifest.version;
+      
+      // 打开（或创建）对应的缓存
+      const cache = await caches.open(expectedCacheName);
+      
+      const total = manifest.images.length;
+      let loaded = 0;
+      
+      // 分批缓存，每批 8 张，控制并发
+      const BATCH = 8;
+      for (let i = 0; i < total; i += BATCH) {
+        const batch = manifest.images.slice(i, i + BATCH);
+        await Promise.allSettled(
+          batch.map(url => 
+            cache.add(url).catch(err => {
+              console.warn('预缓存失败:', url, err.message);
+            })
+          )
+        );
+        loaded += batch.length;
+        // 向页面发送进度
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'CACHE_PROGRESS',
+            loaded: Math.min(loaded, total),
+            total: total
+          });
+        });
+      }
+      
+      // 2. 立即激活
+      self.skipWaiting();
+    })()
   );
 });
 
-// 拦截网络请求：缓存图片
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    (async () => {
+      // 清理所有不是预期缓存的旧缓存
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.filter(key => key !== expectedCacheName)
+            .map(key => caches.delete(key))
+      );
+      // 立即接管所有页面
+      await self.clients.claim();
+    })()
+  );
+});
+
+// 拦截图片请求：直接从缓存读取
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  // 只处理 assets/images/ 下的图片请求
-  if (url.pathname.startsWith('/assets/images/')) {
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        // 有缓存直接返回，否则去网络获取并缓存
-        return cached || fetch(event.request).then(response => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, response.clone());
-            return response;
-          });
-        });
-      })
-    );
-  }
-  // 其他资源不拦截
+  if (!url.pathname.startsWith('/assets/images/')) return;
+  
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(expectedCacheName);
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      
+      // 极端情况：新图片还没缓存到，走网络并缓存
+      const response = await fetch(event.request);
+      if (response.ok) {
+        // 注意：这里没有 await，异步缓存即可
+        cache.put(event.request, response.clone()).catch(() => {});
+      }
+      return response;
+    })()
+  );
 });

@@ -1,3 +1,4 @@
+let timerEpoch = 0; // ★ 新增：定时器版本号，避免并发重建
 let playerAttackTimer = null;
 let monsterAttackTimer = null;
 let currentMonster = null;
@@ -665,13 +666,37 @@ window.startBattleLoop = function () {
         renderStageGrid();
     }
 
-    // 创建攻击定时器（考虑倍速）
+    // ★ 在函数开始处增加清除旧定时器防御
+    clearInterval(playerAttackTimer);
+    clearInterval(monsterAttackTimer);
+    clearInterval(hpRegenTimer);
+    clearInterval(mpRegenTimer);
+
     const speed = window.gameSpeed || 1;
-    hpRegenTimer = setInterval(hpRegenTick, 3000 / speed); 
-    mpRegenTimer = setInterval(mpRegenTick, 3000 / speed); 
-    playerAttackTimer = setInterval(playerAttack, 1000 / (totalAttr.attackSpeed * speed));
-    monsterAttackTimer = setInterval(monsterAttack, 1000 / (currentMonster.attackSpeed * speed));
-    console.log("战斗定时器创建完成，当前倍速：x" + speed);
+
+    // ★ 使用定时器版本号包裹回调
+    timerEpoch++;
+    const currentEpoch = timerEpoch;
+
+    hpRegenTimer = setInterval(() => {
+        if (timerEpoch !== currentEpoch) return;
+        hpRegenTick();
+    }, 3000 / speed);
+
+    mpRegenTimer = setInterval(() => {
+        if (timerEpoch !== currentEpoch) return;
+        mpRegenTick();
+    }, 3000 / speed);
+
+    playerAttackTimer = setInterval(() => {
+        if (timerEpoch !== currentEpoch) return;
+        playerAttack();
+    }, 1000 / (totalAttr.attackSpeed * speed));
+
+    monsterAttackTimer = setInterval(() => {
+        if (timerEpoch !== currentEpoch) return;
+        monsterAttack();
+    }, 1000 / (currentMonster.attackSpeed * speed));
 };
 
 window.stopBattleLoop = function () {
@@ -684,6 +709,9 @@ window.stopBattleLoop = function () {
     hpRegenTimer = null; 
     mpRegenTimer = null; 
 
+    // ★ 递增版本号，使所有旧版本的回调立即失效
+    timerEpoch++;
+
     const save = getSaveData();
     save.isBattleRunning = false;
     setSaveData(save);
@@ -695,7 +723,6 @@ window.stopBattleLoop = function () {
  * 如果战斗正在运行，会立即重建所有定时器以应用新速度，不打断战斗进度
  */
 window.setGameSpeed = function(speed) {
-    // 限制在 1~3 倍
     speed = Math.max(1, Math.min(3, speed));
     window.gameSpeed = speed;
 
@@ -707,24 +734,40 @@ window.setGameSpeed = function(speed) {
     }
     
     const save = getSaveData();
-    // 只有战斗运行中才需要重建定时器
     if (!save.isBattleRunning) return;
-    // 修复：战斗标记已运行但怪物尚未生成时，跳过定时器重建
     if (!currentMonster) {
         console.warn('setGameSpeed: currentMonster 未初始化，跳过定时器重建');
         return;
     }
 
-    // 清除当前所有定时器
+    // 清除旧定时器
     clearInterval(playerAttackTimer);
     clearInterval(monsterAttackTimer);
     clearInterval(hpRegenTimer);
     clearInterval(mpRegenTimer);
 
-    // 用新速度重建
+    // ★ 使用新版本号
+    timerEpoch++;
+    const currentEpoch = timerEpoch;
     const totalAttr = calcTotalAttr(save.baseAttr, save.equipWear);
-    playerAttackTimer  = setInterval(playerAttack,  1000 / (totalAttr.attackSpeed * speed));
-    monsterAttackTimer = setInterval(monsterAttack, 1000 / (currentMonster.attackSpeed * speed));
-    hpRegenTimer = setInterval(hpRegenTick, 3000 / speed);
-    mpRegenTimer = setInterval(mpRegenTick, 3000 / speed);
+
+    playerAttackTimer = setInterval(() => {
+        if (timerEpoch !== currentEpoch) return;
+        playerAttack();
+    }, 1000 / (totalAttr.attackSpeed * speed));
+
+    monsterAttackTimer = setInterval(() => {
+        if (timerEpoch !== currentEpoch) return;
+        monsterAttack();
+    }, 1000 / (currentMonster.attackSpeed * speed));
+
+    hpRegenTimer = setInterval(() => {
+        if (timerEpoch !== currentEpoch) return;
+        hpRegenTick();
+    }, 3000 / speed);
+
+    mpRegenTimer = setInterval(() => {
+        if (timerEpoch !== currentEpoch) return;
+        mpRegenTick();
+    }, 3000 / speed);
 };

@@ -197,6 +197,7 @@ h3 {
 
 .modal-box .tip-btn-group {
     display: flex;
+    height: 30px;
     gap: 10px;
     justify-content: center;
     flex-wrap: wrap;
@@ -386,13 +387,13 @@ h3 {
     }
         /* 单弹窗（非对比模式下）限制宽度，防止溢出 */
     .equip-tip-modal .equip-tip-box {
-        max-width: 340px;
+        max-width: 300px;
         width: 90% !important;   /* 覆盖原来的 70%，更适应小容器 */
     }
 
     /* 同时缩小单弹窗里词条名宽度，与对比模式对齐 */
     .equip-tip-modal .affix-name {
-        flex: 0 0 105px;
+        flex: 0 0 140px;
     }
       /* 将 mainWrap 内部的所有 fixed 弹窗改为 absolute，限制在模拟容器内 */
     .modal-overlay,
@@ -565,4 +566,24 @@ h3 {
 
 *::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.4);
+}
+
+.update-modal-box {
+    max-width: 360px;
+    background: #fdf8e5;
+    border: 2px solid #D5AB88;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+}
+.update-changelog-box {
+    color: #4a2c11;
+    font-size: 14px;
+    line-height: 1.8;
+}
+/* 自定义滚动条颜色（与游戏风格匹配） */
+.update-changelog-box::-webkit-scrollbar {
+    width: 6px;
+}
+.update-changelog-box::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
 }

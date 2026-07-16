@@ -300,9 +300,9 @@
 /* ========== 关卡选择容器 ========== */
 .stage-area {
     border-radius: 10px;
-    padding: 16px 6px;
+    padding: 6px 6px;
     margin-bottom: 0px;
-    height: 290px;
+    height: 270px;
     text-align: center;
     background-image: url('../assets/images/battle/stage-area.png');
     /* 背景从padding内侧开始渲染，不会铺满padding区域 */
@@ -662,7 +662,7 @@
 .resist-penalty-bar {
     width: 100%;
     padding: 6px 10px;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
     color: #5D2915;
     font-size: 14px;
     font-weight: bold;

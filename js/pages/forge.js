@@ -100,45 +100,26 @@ function renderForgeModule() {
     renderForgeEnhanceInfo();
 }
 
-// 渲染装备属性（左右卡片对比）
+// 渲染装备属性（单卡片）
 function renderForgeEquipStats() {
     const equip = forgeCurrentEquip;
     if (!equip) return;
     
-    const currentStatsEl = document.getElementById('forgeCurrentStats');
-    const nextStatsEl = document.getElementById('forgeNextStats');
-    if (!currentStatsEl || !nextStatsEl) return;
+    const displayEl = document.getElementById('forgeEquipDisplay');
+    if (!displayEl) return;
     
-    const rClass = getRarityClass(equip.rarityName);
-    const enhanceBadge = equip.enhanceLevel ? `<span class="enhance-level">+${equip.enhanceLevel}</span>` : '';
-    
-    // ========== 左侧：当前装备卡片 ==========
-    let currentHtml = buildForgeCardHtml(equip, '当前装备', false);
-    currentStatsEl.innerHTML = `<div class="equip-tip-box" style="display:flex;flex-direction:column;">${currentHtml}</div>`;
-    
-    // ========== 右侧：强化后预览卡片 ==========
-    const nextLevel = (equip.enhanceLevel || 0) + 1;
-    if (nextLevel > ENHANCE_CONFIG.maxLevel) {
-        nextStatsEl.innerHTML = `
-            <div class="equip-tip-box" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;color:#94a3b8;">
-                已达最大强化等级
-            </div>`;
-        return;
-    }
-    
-    // 构建强化后的装备模拟对象
-    const nextEquip = simulateEnhancedEquip(equip, nextLevel);
-    let nextHtml = buildForgeCardHtml(nextEquip);
-    nextStatsEl.innerHTML = `<div class="equip-tip-box" style="display:flex;flex-direction:column;">${nextHtml}</div>`;
+    // 只渲染一个卡片，“当前装备”作为 badgeText
+    let html = buildForgeCardHtml(equip, '当前装备');
+    displayEl.innerHTML = `<div class="equip-tip-box" style="display:flex;flex-direction:column;">${html}</div>`;
 }
 
-// 构建单张卡片 HTML（复用装备详情弹窗样式）
-function buildForgeCardHtml(equip, badgeText, isPreview) {
+// 构建单张卡片 HTML
+function buildForgeCardHtml(equip, badgeText) {
     const rClass = getRarityClass(equip.rarityName);
     const enhanceBadge = equip.enhanceLevel ? `<span class="enhance-level">+${equip.enhanceLevel}</span>` : '';
     const badgeHtml = badgeText ? `<span class="forge-preview-badge">${badgeText}</span>` : '';
     
-    // 头部
+    // 头部 — "当前装备"标签移到装备等级后面
     let html = `
         <div class="equip-header">
             <div class="equip-header-top">
@@ -153,7 +134,7 @@ function buildForgeCardHtml(equip, badgeText, isPreview) {
         <div class="equip-divider"></div>
     `;
     
-    // 基础属性
+    // ========== 基础属性（只显示原始值） ==========
     html += '<div class="base-attr-title">【基础属性】</div>';
     if (equip.baseAttr) {
         const template = getEquipBaseTemplate(equip.ilvl, equip.position, equip.subType);
@@ -174,27 +155,11 @@ function buildForgeCardHtml(equip, badgeText, isPreview) {
             baseKeys = Object.keys(equip.baseAttr);
         }
         
-        // 原始装备（用于预览时计算差值）
-        const originalEquip = (!isPreview) ? null : forgeCurrentEquip;
-        
         baseKeys.filter(key => equip.baseAttr[key] !== undefined).forEach(key => {
-            const val = equip.baseAttr[key];
+            const val = equip.baseAttr[key];  // 只取原始基础值
             const cfg = ATTR_DISPLAY_CONFIG[key];
             const label = cfg ? cfg.label : key;
-            // 计算总和：基础值 + 强化加成
-            const total = val + (equip.enhanceBonus?.[key] ?? 0);
-            const valStr = cfg ? cfg.format(total) : total.toFixed(1);
-            
-            // 如果是预览模式，显示差值
-            let diffHtml = '';
-            if (isPreview && originalEquip) {
-                const origTotal = (originalEquip.baseAttr?.[key] ?? 0) + (originalEquip.enhanceBonus?.[key] ?? 0);
-                if (Math.abs(total - origTotal) > 0.001) {
-                    const diff = total - origTotal;
-                    const diffStr = cfg ? cfg.format(diff) : diff.toFixed(1);
-                    diffHtml = `<span class="forge-attr-diff">(+${diffStr})</span>`;
-                }
-            }
+            const valStr = cfg ? cfg.format(val) : val.toFixed(1);
             
             html += `<div class="forge-equip">
                 <span class="forge-equip-name">${label}</span>
@@ -203,8 +168,8 @@ function buildForgeCardHtml(equip, badgeText, isPreview) {
         });
     }
     
-    // ========== 强化增益（仅左侧当前装备显示） ==========
-    if (!isPreview && equip.enhanceBonus && Object.keys(equip.enhanceBonus).length > 0) {
+    // ========== 强化增益（绿色） ==========
+    if (equip.enhanceBonus && Object.keys(equip.enhanceBonus).length > 0) {
         html += '<div class="equip-divider"></div>';
         html += '<div class="base-attr-title" style="color:#22c55e;">【强化增益】</div>';
         Object.entries(equip.enhanceBonus).forEach(([key, bonus]) => {
@@ -219,7 +184,7 @@ function buildForgeCardHtml(equip, badgeText, isPreview) {
         });
     }
     
-    // ========== 随机词条（左右都显示） ==========
+    // ========== 随机词条 ==========
     if (equip.affixes && equip.affixes.length > 0) {
         html += '<div class="equip-divider"></div>';
         html += '<div class="affix-title">【随机词条】</div>';

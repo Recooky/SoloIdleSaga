@@ -22,6 +22,37 @@ function randomRange(min, max) {
     return min + Math.random() * (max - min);
 }
 
+// 根据ilvl获取装备阶次（1~12）
+function getTierIndex(ilvl) {
+    return Math.min(12, Math.max(1, Math.ceil(ilvl / 10)));
+}
+
+// 计算物品等级增幅比例 (0 ~ maxBonus)
+function getIlvlBonus(ilvl, minIlvl, maxIlvl) {
+    const tierIndex = getTierIndex(ilvl);
+    // 各阶最大增幅表（与上文表格一致）
+    const MAX_BONUS_TABLE = [
+        1.00,  // tier 1
+        0.90,  // tier 2
+        0.81,  // tier 3
+        0.73,  // tier 4
+        0.66,  // tier 5
+        0.59,  // tier 6
+        0.53,  // tier 7
+        0.48,  // tier 8
+        0.43,  // tier 9
+        0.39,  // tier 10
+        0.35,  // tier 11
+        0.32   // tier 12
+    ];
+    const maxBonus = MAX_BONUS_TABLE[tierIndex - 1] || 0.32;
+    const rangeLen = maxIlvl - minIlvl;
+    if (rangeLen <= 0) return 0;
+    const progress = (ilvl - minIlvl) / rangeLen;
+    // 限制在 0~maxBonus 之间（防止浮点误差越界）
+    return Math.min(maxBonus, Math.max(0, progress * maxBonus));
+}
+
 /**
  * 按权重随机选择下标
  * @param {number[]} weights 概率数组
@@ -197,20 +228,23 @@ window.generateEquip = function(ilvl, position, rarity){
     }
     const template = getEquipBaseTemplate(ilvl, position, subType);
     const baseAttr = {};
+    // 计算物品等级增幅比例（基于模板的 ilvl 范围）
+    const ilvlBonus = getIlvlBonus(ilvl, template.ilvl[0], template.ilvl[1]);
     const elementTypes = ['fireDmg', 'coldDmg', 'lightDmg'];
     let chosenEle = null;
 
 
     // 基础属性 * 稀有度倍率
     Object.entries(template.base).forEach(([key, val]) => {
+    // ★ 先应用物品等级增幅，再乘以稀有度倍率
+        const baseWithBonus = val * (1 + ilvlBonus);
         if (key === 'eleDmg') {
             chosenEle = elementTypes[Math.floor(Math.random() * elementTypes.length)];
-            baseAttr[chosenEle] = Math.floor(val * rarity.rate);
+            baseAttr[chosenEle] = Math.floor(baseWithBonus * rarity.rate);
         } else if (key === 'critRate' || key === 'critDmg') {
-        // ★ 修复：暴击率、暴击伤害保留小数，不 floor
-        baseAttr[key] = parseFloat((val * rarity.rate).toFixed(4));
+            baseAttr[key] = parseFloat((baseWithBonus * rarity.rate).toFixed(4));
         } else {
-        baseAttr[key] = Math.floor(val * rarity.rate);
+            baseAttr[key] = Math.floor(baseWithBonus * rarity.rate);
         }
     });
 
