@@ -26,22 +26,50 @@ jobs:
       - name: 全局安装 Cordova
         run: npm install -g cordova@latest
 
-      # 使用系统自带的 Android SDK，但给当前用户写权限
+      # 检查 SDK 路径并安装组件
       - name: 安装 Android SDK 组件
         run: |
-          # 设置 SDK 路径
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          # 先查找 SDK 的实际位置
+          echo "查找 Android SDK 位置..."
+          find /usr/local/lib/android -name "sdkmanager" 2>/dev/null || echo "未找到"
+          find /opt -name "sdkmanager" 2>/dev/null || echo "未找到"
           
-          # 给当前用户添加 SDK 目录的写权限（避免使用 sudo）
-          sudo chown -R $USER:$USER $ANDROID_HOME
+          # 尝试常见的 SDK 路径
+          if [ -f /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager ]; then
+            SDK_PATH="/usr/local/lib/android/sdk"
+            SDK_MANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
+          elif [ -f /usr/local/lib/android/sdk/cmdline-tools/tools/bin/sdkmanager ]; then
+            SDK_PATH="/usr/local/lib/android/sdk"
+            SDK_MANAGER="$SDK_PATH/cmdline-tools/tools/bin/sdkmanager"
+          elif [ -f /usr/lib/android-sdk/cmdline-tools/latest/bin/sdkmanager ]; then
+            SDK_PATH="/usr/lib/android-sdk"
+            SDK_MANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
+          else
+            # 如果都没找到，手动下载
+            echo "系统 SDK 未找到，手动下载..."
+            mkdir -p $HOME/android-sdk
+            cd $HOME/android-sdk
+            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+            unzip -q commandlinetools-linux-11076708_latest.zip
+            mkdir -p cmdline-tools
+            mv cmdline-tools cmdline-tools/latest
+            SDK_PATH="$HOME/android-sdk"
+            SDK_MANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
+          fi
           
-          # 安装所需组件
-          $ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          echo "使用 SDK 路径: $SDK_PATH"
+          echo "使用 sdkmanager: $SDK_MANAGER"
           
-          # 设置环境变量供后续步骤使用
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+          # 设置环境变量
+          echo "ANDROID_HOME=$SDK_PATH" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$SDK_PATH" >> $GITHUB_ENV
+          echo "$SDK_PATH/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$SDK_PATH/platform-tools" >> $GITHUB_PATH
+          echo "$SDK_PATH/build-tools/33.0.2" >> $GITHUB_PATH
+          
+          # 安装组件
+          yes | $SDK_MANAGER --licenses > /dev/null 2>&1
+          $SDK_MANAGER "platform-tools" "platforms;android-33" "build-tools;33.0.2"
           
           echo "Android SDK 组件安装完成"
 
@@ -71,7 +99,6 @@ jobs:
           sed -i '/<platform name="android">/a \ \ \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n        <application android:usesCleartextTraffic="true" />\n      <\/edit-config>' config.xml
           
           echo "Config.xml 配置完成"
-          cat config.xml
 
       - name: 写入跳转网页首页
         run: |
@@ -81,11 +108,12 @@ jobs:
       - name: 编译 APK
         run: |
           cd game-apk
-          # 使用系统 SDK
-          export ANDROID_HOME=/usr/local/lib/android/sdk
+          # 从环境变量读取 SDK 路径
+          export ANDROID_HOME=${ANDROID_HOME:-$HOME/android-sdk}
           export ANDROID_SDK_ROOT=$ANDROID_HOME
           export GRADLE_OPTS="-Xmx2048m -Dorg.gradle.jvmargs=-Xmx2048m"
           
+          echo "使用 ANDROID_HOME: $ANDROID_HOME"
           cordova build android --debug
 
       - name: 上传 APK
