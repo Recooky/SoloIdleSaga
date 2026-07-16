@@ -26,7 +26,6 @@ jobs:
       - name: 全局安装 Cordova
         run: npm install -g cordova@latest
 
-      # 检查 SDK 路径并安装组件
       - name: 安装 Android SDK 组件
         run: |
           # 先查找 SDK 的实际位置
@@ -81,29 +80,76 @@ jobs:
           cordova plugin add cordova-plugin-inappbrowser
           cordova plugin add cordova-plugin-network-information
 
-      - name: 配置图标与网络权限
+      - name: 配置图标和 WebView
         run: |
           cd game-apk
           
+          # ========== 配置图标 ==========
           # 创建图标目录
           mkdir -p res/android
+          
+          # 检查图标文件是否存在
           if [ -f ../../app-icon/icon.png ]; then
+            echo "找到图标文件，开始配置..."
+            
+            # 复制图标到各个密度目录
             cp ../../app-icon/icon.png res/android/icon.png
-            sed -i '/<widget /a \ \ <icon src="res/android/icon.png" density="xxxhdpi" />' config.xml
+            
+            # 使用 ImageMagick 生成不同尺寸的图标（如果安装了）
+            # 如果没有，就使用同一个图标
+            if command -v convert &> /dev/null; then
+              echo "使用 ImageMagick 生成多尺寸图标..."
+              mkdir -p res/mipmap-mdpi
+              mkdir -p res/mipmap-hdpi
+              mkdir -p res/mipmap-xhdpi
+              mkdir -p res/mipmap-xxhdpi
+              mkdir -p res/mipmap-xxxhdpi
+              
+              convert ../../app-icon/icon.png -resize 48x48 res/mipmap-mdpi/icon.png
+              convert ../../app-icon/icon.png -resize 72x72 res/mipmap-hdpi/icon.png
+              convert ../../app-icon/icon.png -resize 96x96 res/mipmap-xhdpi/icon.png
+              convert ../../app-icon/icon.png -resize 144x144 res/mipmap-xxhdpi/icon.png
+              convert ../../app-icon/icon.png -resize 192x192 res/mipmap-xxxhdpi/icon.png
+            else
+              echo "ImageMagick 未安装，使用单个图标配置..."
+            fi
+            
+            # 在 config.xml 中配置图标（Cordova 标准方式）
+            cat >> config.xml << 'EOF'
+          <icon src="res/android/icon.png" density="mdpi" />
+          <icon src="res/android/icon.png" density="hdpi" />
+          <icon src="res/android/icon.png" density="xhdpi" />
+          <icon src="res/android/icon.png" density="xxhdpi" />
+          <icon src="res/android/icon.png" density="xxxhdpi" />
+          EOF
+            
+            echo "图标配置完成"
+          else
+            echo "警告: 未找到图标文件 app-icon/icon.png"
           fi
           
-          # 在 <widget> 标签内插入访问权限
+          # ========== 配置 WebView 直接加载远程网页 ==========
+          # 修改 content 的 src 指向你的网页
+          sed -i 's|<content src="index.html" />|<content src="https://recooky.github.io/SoloIdleSaga/" />|' config.xml
+          
+          # 添加访问权限
           sed -i '/<widget /a \ \ <access origin="*" />' config.xml
           
-          # 在 <platform name="android"> 内部插入 edit-config
+          # 添加明文流量配置
           sed -i '/<platform name="android">/a \ \ \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n        <application android:usesCleartextTraffic="true" />\n      <\/edit-config>' config.xml
           
+          # 添加网络权限
+          sed -i '/<platform name="android">/a \ \ \ \ <allow-navigation href="https://recooky.github.io/*" />' config.xml
+          
           echo "Config.xml 配置完成"
+          cat config.xml
 
-      - name: 写入跳转网页首页
+      # 删除默认的 index.html，因为我们现在直接加载远程网页
+      - name: 删除默认首页
         run: |
           cd game-apk/www
-          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>SoloIdleSaga</title></head><body><script>const GAME_URL = "https://recooky.github.io/SoloIdleSaga/";window.location.href = GAME_URL;</script></body></html>' > index.html
+          # 创建一个简单的空白页面，防止加载错误
+          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Loading...</title></head><body>Loading...</body></html>' > index.html
 
       - name: 编译 APK
         run: |
