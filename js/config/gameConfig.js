@@ -77,13 +77,13 @@ window.WEAPON_SUBTYPE = {
 
 // 7档稀有度配置
 window.RARITY_CONFIG = [
-    { name: "普通", color: "#ffffff",   className: "rarity-normal",  label: "普通(白色)", affixNum: 0, rate: 1.0 },
-    { name: "优秀", color: "#32cd32",   className: "rarity-fine",    label: "优秀(绿色)", affixNum: 1, rate: 1.2 },
-    { name: "稀有", color: "#0070dd",   className: "rarity-rare",    label: "稀有(蓝色)", affixNum: 2, rate: 1.5 },
-    { name: "史诗", color: "#a335ee",   className: "rarity-epic",    label: "史诗(紫色)", affixNum: 3, rate: 2.0 },
-    { name: "传说", color: "#ff8c00",   className: "rarity-legend",  label: "传说(橙色)", affixNum: 4, rate: 2.8 },
-    { name: "神话", color: "#ff2222",   className: "rarity-myth",    label: "神话(红色)", affixNum: 5, rate: 4.0 },
-    { name: "宇宙", color: "#00ccff)",  className: "rarity-cosmic", label: "宇宙(金色)", affixNum: 6, rate: 6.0 }
+    { name: "普通", color: "#ffffff",   className: "rarity-normal",  label: "普通", affixNum: 0, rate: 1.0 },
+    { name: "优秀", color: "#32cd32",   className: "rarity-fine",    label: "优秀", affixNum: 1, rate: 1.2 },
+    { name: "稀有", color: "#0070dd",   className: "rarity-rare",    label: "稀有", affixNum: 2, rate: 1.5 },
+    { name: "史诗", color: "#a335ee",   className: "rarity-epic",    label: "史诗", affixNum: 3, rate: 2.0 },
+    { name: "传说", color: "#ff8c00",   className: "rarity-legend",  label: "传说", affixNum: 4, rate: 2.8 },
+    { name: "神话", color: "#ff2222",   className: "rarity-myth",    label: "神话", affixNum: 5, rate: 4.0 },
+    { name: "宇宙", color: "#00ccff)",  className: "rarity-cosmic", label: "宇宙", affixNum: 6, rate: 6.0 }
 ];
 
 

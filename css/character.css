@@ -377,7 +377,8 @@
     border: 2px solid #D5AB88;
     border-radius: 12px;
     width: 90%;                    /* 固定宽度 */
-    max-height: 80vh;                /* 最大高度限制 */
+    max-width: 360px;        /* 宽屏上限，防止弹窗过宽 */
+    max-height: 70vh;        /* 高度上限，防止弹窗过高 */
     display: flex;
     flex-direction: column;          /* 纵向 flex 布局 */
     overflow: hidden;                /* 防止整框滚动 */
@@ -410,6 +411,7 @@
     justify-content: center;
     border-top: 1px solid #273549;
     flex-shrink: 0;                  /* 禁止压缩 */
+    max-height: 55vh;
 }
 
 .form-item {
@@ -417,8 +419,6 @@
 }
 .form-item label {
     display:block;
-    margin-bottom:8px;
-    color:#a77d59;
     font-size: 14px;
 }
 .level-range input {
@@ -706,7 +706,17 @@
 /* 品质配置面板 */
 .quality-config-panel {
     margin-left: 14px;          /* 缩进以表示层级关系 */
-    padding: 10px 12px;
+    padding: 1px 12px;
+    flex: 0 0 100%;       /* 强制换行 */
+    margin-top: 6px;
+    border-bottom: 2px solid #eedbc5;
+    padding-bottom: 8px;
+}
+
+
+.quality-config-panel[style*="display: block"] {
+    display: flex !important;
+    flex-wrap: wrap;
 }
 
 .config-row {
@@ -876,10 +886,11 @@
 .custom-select-wrapper {
     position: relative;
     display: inline-block;
-    width: 90px;   /* 与之前 select 宽度匹配，可按需调整 */
+    width: 70px;   /* 与之前 select 宽度匹配，可按需调整 */ 
 }
 
 .custom-select-trigger {
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -919,14 +930,28 @@
     max-height: 200px;
     overflow-y: auto;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    /* ★ 新增：允许纵向滚动，但隐藏滚动条 */
+    overflow-y: auto;
+    scrollbar-width: none;          /* Firefox */
+    -ms-overflow-style: none;       /* IE/Edge */
 }
-
+.custom-select-options::-webkit-scrollbar {
+    display: none;
+}
 .custom-select-options.show {
     display: block;
+    flex-direction: column;
+}
+
+.custom-select-options .custom-select-option {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
 }
 
 .custom-select-option {
-    padding: 6px 10px;
+    height: 30px;
+    padding: 2px 8px;
     font-size: 12px;
     color: #4a2c11;
     cursor: pointer;
@@ -945,3 +970,43 @@
 .custom-select-option:not(:last-child) {
     border-bottom: 1px solid #eedbc5;
 }
+
+.quality-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.quality-check-item {
+    flex: 0 0 auto;
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.quality-level-row {
+    display: none;          /* 默认隐藏 */
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 当JS设置 display: block 时强制转为 flex 与checkbox同行 */
+.quality-level-row[style*="display: block"] {
+    display: flex !important;
+}
+
+.quality-level-row label {
+    white-space: nowrap;
+    margin-right: 2px;
+    line-height: 30px;   /* 与 trigger 高度严格一致 */
+    height: auto;        /* 不需要固定高度 */
+    vertical-align: middle; /* 保险 */
+}
+
+.level-range {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+

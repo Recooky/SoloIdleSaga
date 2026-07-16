@@ -635,9 +635,6 @@ window.startBattleLoop = function () {
         setSaveData(save);
     }
 
-    // 先清理已有定时器
-    stopBattleLoop();
-
     console.log("开始执行挂机战斗函数");
     console.log("读取存档数据：", save);
 

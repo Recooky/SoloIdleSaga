@@ -470,7 +470,7 @@ function initBattleModule() {
             const isSelected = (_selectedDiff === diffIdx) || 
                             (_selectedDiff === -1 && getDiffIndex(currentStage) === diffIdx);
 
-            const bgUrl = config.background ? config.background.replace(/^\.\//, '../') : '';
+            const bgUrl = config.background ? '../' + config.background : '';
 
             zones.push({
                 diffIdx: diffIdx,

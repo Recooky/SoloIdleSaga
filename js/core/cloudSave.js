@@ -70,15 +70,24 @@ function doOfflineSettleAndAutoBattle() {
         const offlineResult = claimOfflineReward();
         console.log("【离线结算结果】", offlineResult);
         if (offlineResult.equipList.length > 0) {
-            alert(`离线挂机结算完成！
-离线时长：${offlineResult.hour}小时
-共获得 ${offlineResult.equipList.length} 件装备，已存入背包`);
+            alert(`离线挂机结算完成！\n离线时长：${offlineResult.hour}小时\n共获得 ${offlineResult.equipList.length} 件装备，已存入背包`);
         }
     } catch (err) {
         console.error("【离线结算异常】结算失败，跳过结算直接启动战斗：", err);
     }
 
-    // 校验战斗函数是否存在并启动
+    // ===== 新增：清理残留战斗状态，避免卡死误判 =====
+    const save = getSaveData();
+    if (save.isBattleRunning) {
+        console.log("【清理】发现上次战斗残留状态，手动停止...");
+        if (typeof stopBattleLoop === "function") {
+            stopBattleLoop();   // 停止可能的定时器（即使不存在也不会报错）
+        }
+        save.isBattleRunning = false;
+        setSaveData(save);
+    }
+    // ================================================
+
     if (typeof startBattleLoop === "function") {
         console.log("【流程】准备调用startBattleLoop启动挂机");
         startBattleLoop();
@@ -93,27 +102,90 @@ function doOfflineSettleAndAutoBattle() {
  */
 function startAutoCloudSave() {
   if (autoSaveTimer) clearInterval(autoSaveTimer);
+
+  // ★ 首次启动时清理重复记录（保留最新一条）
+  (async function cleanDuplicateSaves() {
+    try {
+      const { data: allRows, error: queryErr } = await supabaseClient
+        .from("game_save")
+        .select("id")
+        .eq("user_id", currentUser?.id || "")
+        .order('last_upload_at', { ascending: false });
+      if (queryErr) {
+        console.error("【云存档】查询重复记录失败：", queryErr);
+        return;
+      }
+      if (allRows && allRows.length > 1) {
+        const keepId = allRows[0].id;
+        const deleteIds = allRows.slice(1).map(r => r.id);
+        const { error: delErr } = await supabaseClient
+          .from("game_save")
+          .delete()
+          .in("id", deleteIds);
+        if (delErr) {
+          console.error("【云存档】清理重复记录失败：", delErr);
+        } else {
+          console.log(`【清理】成功删除 ${deleteIds.length} 条重复存档记录`);
+        }
+      }
+    } catch (e) {
+      console.error("【云存档】清理异常：", e);
+    }
+  })();
+
+  // ★ 自动定时云存档
   autoSaveTimer = setInterval(async () => {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return;
+
     try {
-      const saveData = getSaveData();
+      const rawSaveData = getSaveData();
+      if (!rawSaveData) {
+        console.error("【云存档】本地存档无效，跳过上传");
+        return;
+      }
+
+      // 深度克隆，移除不可序列化内容
+      let saveData;
+      try {
+        saveData = JSON.parse(JSON.stringify(rawSaveData));
+      } catch (e) {
+        console.error("【云存档】本地存档无法序列化，跳过上传", e);
+        return;
+      }
+      if (!saveData || Object.keys(saveData).length === 0) {
+        console.error("【云存档】本地存档为空对象，跳过上传");
+        return;
+      }
+
       const now = new Date();
-      const { data: existSave } = await supabaseClient
+
+      // 查询最新一条记录（防止多行问题）
+      const { data: rows, error: queryError } = await supabaseClient
         .from("game_save")
         .select("id")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .order('last_upload_at', { ascending: false })
+        .limit(1);
+
+      if (queryError) {
+        console.error("【云存档】查询现有记录失败：", queryError);
+        return;
+      }
+
+      const existSave = rows?.[0] || null;
       let res;
       if (existSave) {
+        // 更新已存在的记录
         res = await supabaseClient
           .from("game_save")
           .update({
             save_data: saveData,
             last_upload_at: now
           })
-          .eq("user_id", user.id);
+          .eq("id", existSave.id);  // 用 ID 精确更新
       } else {
+        // 首次插入
         res = await supabaseClient
           .from("game_save")
           .insert([{
@@ -122,13 +194,17 @@ function startAutoCloudSave() {
             last_upload_at: now
           }]);
       }
+
       if (!res.error) {
-        document.getElementById("editLastSaveTime").innerText = now.toLocaleString();
+        const saveTimeEl = document.getElementById("editLastSaveTime");
+        if (saveTimeEl) saveTimeEl.innerText = now.toLocaleString();
+      } else {
+        console.error("【云存档】上传失败：", res.error);
       }
     } catch (err) {
-      console.error("自动存档失败：", err);
+      console.error("云存档自动保存异常：", err);
     }
-  }, 60 * 1000);
+  }, 20 * 1000);
 }
 
 // 初始化登录弹窗事件只执行一次
@@ -242,6 +318,9 @@ async function checkLogin() {
   if (user) {
     currentUser = user;
     updateAccountDisplay();
+    // ===== 新增：每次打开游戏时，先同步云端最新存档到本地 =====
+    await autoLoadCloudSaveAfterLogin();
+    // ======================================================
     // 已有登录会话，调用公共方法结算离线+自动挂机+开启云存档
     doOfflineSettleAndAutoBattle();
     startAutoCloudSave();
@@ -258,9 +337,12 @@ async function checkLogin() {
  * 初始化存档时间
  */
 async function initCloudSaveTime() {
+  const saveTimeEl = document.getElementById("editLastSaveTime");
+  if (!saveTimeEl) return;  // 元素不存在则直接跳过，不报错
+
   const { data: { user } } = await supabaseClient.auth.getUser();
   if (!user) {
-    document.getElementById("editLastSaveTime").innerText = "未登录";
+    saveTimeEl.innerText = "未登录";
     return;
   }
   const { data } = await supabaseClient
@@ -270,9 +352,9 @@ async function initCloudSaveTime() {
     .maybeSingle();
 
   if (data?.last_upload_at) {
-    document.getElementById("editLastSaveTime").innerText = new Date(data.last_upload_at).toLocaleString();
+    saveTimeEl.innerText = new Date(data.last_upload_at).toLocaleString();
   } else {
-    document.getElementById("editLastSaveTime").innerText = "暂无云端备份";
+    saveTimeEl.innerText = "暂无云端备份";
   }
 }
 
@@ -281,18 +363,52 @@ async function initCloudSaveTime() {
  */
 async function autoLoadCloudSaveAfterLogin() {
   const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return;
-  const { data } = await supabaseClient
+  if (!user) {
+    console.log("【流程】同步云端存档：未检测到登录用户，跳过");
+    return;
+  }
+
+  console.log("【流程】开始同步云端存档到本地");
+  const { data, error } = await supabaseClient
     .from("game_save")
-    .select("save_data")
+    .select("save_data, last_upload_at")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  if (error) {
+    console.error("【云存档同步】查询失败：", error);
+    return;
+  }
+
+  console.log("【调试】云端记录：", data);
+
   if (data?.save_data) {
-    setSaveData(data.save_data);
-    refreshCharacterPanel();
+    try {
+      const parsed = JSON.parse(JSON.stringify(data.save_data));
+      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+        // ✅ 保存当前战斗运行状态，防止同步覆盖
+        const currentSave = getSaveData();
+        const currentBattleRunning = currentSave.isBattleRunning;
+
+        setSaveData(parsed);
+        console.log("【流程】云端存档已同步至本地，准备结算离线收益");
+
+        // ✅ 恢复战斗运行状态
+        const save = getSaveData();
+        save.isBattleRunning = currentBattleRunning;
+        setSaveData(save);
+
+        refreshCharacterPanel();
+        return;
+      }
+    } catch (e) {
+      console.error("【云存档同步】save_data 解析失败：", e);
+    }
+    console.log("【流程】云端 save_data 为空或无效，跳过同步");
+  } else {
+    console.log("【流程】云端无存档记录或 save_data 为 null，跳过同步");
   }
 }
-
 /**
  * 更新账号展示
  */

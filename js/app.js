@@ -151,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     // 2. 页面初始化：加载云端存档时间 + 自动拉取登录用户存档
     const pageInitPromise = (async function initPage() {
         await initCloudSaveTime();
-        await autoLoadCloudSaveAfterLogin();
     })();
 
     // 然后在调用 initBattleModule 前等待它完成

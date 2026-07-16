@@ -6,6 +6,9 @@ let bagFilter = 'weapon';
 let autoSellConfig = JSON.parse(localStorage.getItem("auto_sell_config")) || {
     qualityConfigs: {}
 };
+batchFilterCache = JSON.parse(localStorage.getItem("batch_destroy_filter")) || {
+    qualityConfigs: {}
+};
 let otherItemListCache = [];    // 缓存当前其他物品的显示列表
 // 当前背包排序模式：'time' 按获得时间 | 'part' 按部位 → 同部位按物品等级 | 'ilvl' 按物品等级
 let bagSortMode = 'time';
@@ -954,7 +957,7 @@ function buildQualityConfigHtml(configCache) {
         RARITY_CONFIG.forEach(item => {
             configCache.qualityConfigs[item.name] = {
                 checked: false,
-                ilvlMin: 1,
+                ilvlMin: 0,
                 ilvlMax: 10,
                 affixCount: 0,
                 affixTierMin: 1
@@ -966,7 +969,7 @@ function buildQualityConfigHtml(configCache) {
     RARITY_CONFIG.forEach(item => {
         const config = configCache.qualityConfigs[item.name] || {
             checked: false,
-            ilvlMin: 1,
+            ilvlMin: 0,
             ilvlMax: 10,
             affixCount: 0,
             affixTierMin: 1
@@ -977,7 +980,7 @@ function buildQualityConfigHtml(configCache) {
         const ilvlMinVal = config.ilvlMin;
         const ilvlMaxVal = config.ilvlMax;
 
-        const affixCountOptions = ['', '1个', '2个', '3个', '4个', '5个', '6个'];
+        const affixCountOptions = ['不限制', '1个', '2个', '3个', '4个', '5个', '6个'];
         const currentCountLabel = config.affixCount === 0 ? '' : config.affixCount + '个';
 
         const affixTierOptions = [];
@@ -990,42 +993,130 @@ function buildQualityConfigHtml(configCache) {
                 <input type="checkbox" value="${item.name}" ${checkedAttr}>
                 <span class="${item.className}">${item.label}</span>
             </div>
-            <div class="quality-config-panel" style="display: ${panelDisplay}">
-                <div class="config-row">
-                    <label>物品等级</label>
-                    <div class="level-range">
-                        <input type="number" class="config-ilvl-min" data-quality="${item.name}" 
-                            value="${ilvlMinVal}" min="1" max="999">
-                        ~
-                        <input type="number" class="config-ilvl-max" data-quality="${item.name}" 
-                            value="${ilvlMaxVal}" min="1" max="999">
+            <!-- ★ 新增：物品等级行，与checkbox同行 -->
+            <div class="quality-level-row" style="display: ${panelDisplay}">
+                <label>物品等级</label>
+                <div class="level-range">
+                    <!-- 最小值下拉 -->
+                    <div class="custom-select-wrapper" data-quality="${item.name}" data-type="ilvl-min" data-value="${ilvlMinVal}">
+                        <div class="custom-select-trigger">${ilvlMinVal}</div>
+                        <div class="custom-select-options">
+                            ${(() => {
+                                const options = ['0', '10', '20', '30', '40', '50',
+                                                '60', '70', '80', '90', '100', '110', '120'];
+                                return options.map(opt => {
+                                    const selected = opt === String(ilvlMinVal) ? ' selected' : '';
+                                    return `<div class="custom-select-option${selected}" data-value="${opt}">${opt}</div>`;
+                                }).join('');
+                            })()}
+                        </div>
+                    </div>
+                    <span>～</span>
+                    <!-- 最大值下拉 -->
+                    <div class="custom-select-wrapper" data-quality="${item.name}" data-type="ilvl-max" data-value="${ilvlMaxVal}">
+                        <div class="custom-select-trigger">${ilvlMaxVal}</div>
+                        <div class="custom-select-options">
+                            ${(() => {
+                                const options = ['10', '20', '30', '40', '50',
+                                                '60', '70', '80', '90', '100', '110', '120'];
+                                return options.map(opt => {
+                                    const selected = opt === String(ilvlMaxVal) ? ' selected' : '';
+                                    return `<div class="custom-select-option${selected}" data-value="${opt}">${opt}</div>`;
+                                }).join('');
+                            })()}
+                        </div>
                     </div>
                 </div>
+            </div>
+            <!-- ★ 注意：quality-config-panel 中移除了物品等级行，只保留词缀 -->
+            <div class="quality-config-panel" style="display: ${panelDisplay}">
                 ${item.affixNum > 0 ? `
                 <div class="config-row">
                     <label class="affix-filter-label">
                         <span>保留</span>
-                        <select class="config-affix-count" data-quality="${item.name}">
-                            ${affixCountOptions.map(opt => 
-                                `<option value="${opt}" ${opt === currentCountLabel ? 'selected' : ''}>${opt === '' ? ' ' : opt}</option>`
-                            ).join('')}
-                        </select>
-                        <select class="config-affix-tier" data-quality="${item.name}">
-                            ${affixTierOptions.map(opt => 
-                                `<option value="${opt}" ${opt === currentTierLabel ? 'selected' : ''}>${opt}</option>`
-                            ).join('')}
-                        </select>
+                        <!-- 自定义下拉框：保留词缀数量 -->
+                        <div class="custom-select-wrapper" data-quality="${item.name}" data-type="affix-count" data-value="${currentCountLabel}">
+                            <div class="custom-select-trigger">${currentCountLabel || ' '}</div>
+                            <div class="custom-select-options">
+                                ${affixCountOptions.map(opt => {
+                                    const val = opt === '' ? '' : opt;
+                                    const display = opt === '' ? ' ' : opt;
+                                    const selected = opt === currentCountLabel ? ' selected' : '';
+                                    return `<div class="custom-select-option${selected}" data-value="${val}">${display}</div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                        <!-- 自定义下拉框：词缀最小T阶 -->
+                        <div class="custom-select-wrapper" data-quality="${item.name}" data-type="affix-tier" data-value="${currentTierLabel}">
+                            <div class="custom-select-trigger">${currentTierLabel}</div>
+                            <div class="custom-select-options">
+                                ${affixTierOptions.map(opt => {
+                                    const selected = opt === currentTierLabel ? ' selected' : '';
+                                    return `<div class="custom-select-option${selected}" data-value="${opt}">${opt}</div>`;
+                                }).join('')}
+                            </div>
+                        </div>
                         <span>及以上词缀装备</span>
                     </label>
                 </div>
                 ` : ''}
             </div>
-        </div>
-        `;
+        </div>`;
     });
     return html;
 }
 
+// 初始化自定义下拉框（支持一个弹窗内的所有自定义 select）
+function initCustomSelects(modal) {
+    // 点击 trigger 展开/收起
+    modal.querySelectorAll('.custom-select-trigger').forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const wrapper = this.closest('.custom-select-wrapper');
+            const options = wrapper.querySelector('.custom-select-options');
+            // 关闭同弹窗内其他已展开的下拉
+            modal.querySelectorAll('.custom-select-options.show').forEach(el => {
+                if (el !== options) {
+                    el.classList.remove('show');
+                    el.closest('.custom-select-wrapper').querySelector('.custom-select-trigger').classList.remove('open');
+                }
+            });
+            options.classList.toggle('show');
+            this.classList.toggle('open');
+        });
+    });
+
+    // 点击选项选中
+    modal.querySelectorAll('.custom-select-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const wrapper = this.closest('.custom-select-wrapper');
+            const trigger = wrapper.querySelector('.custom-select-trigger');
+            // 更新显示文字
+            const displayText = this.textContent.trim() === '' ? ' ' : this.textContent;
+            trigger.textContent = displayText;
+            // 存储实际值
+            wrapper.dataset.value = this.dataset.value;
+            // 高亮当前选项
+            wrapper.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            // 关闭下拉
+            wrapper.querySelector('.custom-select-options').classList.remove('show');
+            trigger.classList.remove('open');
+        });
+    });
+}
+
+// 全局点击外部关闭（只绑定一次）
+if (!window._customSelectGlobalBound) {
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.custom-select-options.show').forEach(el => {
+            el.classList.remove('show');
+            el.closest('.custom-select-wrapper').querySelector('.custom-select-trigger').classList.remove('open');
+        });
+    });
+    window._customSelectGlobalBound = true;
+}
 /**
  * 为弹窗内的品质配置区域绑定事件
  * @param {HTMLElement} modal - 弹窗容器
@@ -1033,14 +1124,16 @@ function buildQualityConfigHtml(configCache) {
  * @returns {boolean} 校验是否通过（如果通过返回true）
  */
 function attachQualityConfigEvents(modal, configCache) {
+    initCustomSelects(modal);
     // 1. checkbox 切换时展开/折叠配置面板
     modal.querySelectorAll('.quality-check-item input[type="checkbox"]').forEach(cb => {
         cb.addEventListener('change', function() {
             const qualityGroup = this.closest('.quality-group');
+            const levelRow = qualityGroup.querySelector('.quality-level-row');
             const panel = qualityGroup.querySelector('.quality-config-panel');
-            if (panel) {
-                panel.style.display = this.checked ? 'block' : 'none';
-            }
+            const display = this.checked ? 'block' : 'none';
+            if (levelRow) levelRow.style.display = display;
+            if (panel) panel.style.display = display;
         });
     });
 
@@ -1051,6 +1144,7 @@ function attachQualityConfigEvents(modal, configCache) {
             qualityGroups.forEach(group => {
                 const qualityName = group.dataset.quality;
                 const checkbox = group.querySelector('input[type="checkbox"]');
+                const levelRow = group.querySelector('.quality-level-row');
                 const panel = group.querySelector('.quality-config-panel');
 
                 const config = {
@@ -1061,20 +1155,30 @@ function attachQualityConfigEvents(modal, configCache) {
                     affixTierMin: 1
                 };
 
-                if (panel) {
-                    const ilvlMinInput = panel.querySelector('.config-ilvl-min');
-                    const ilvlMaxInput = panel.querySelector('.config-ilvl-max');
-                    const countSelect = panel.querySelector('.config-affix-count');
-                    const tierSelect = panel.querySelector('.config-affix-tier');
+                // ★ 从 quality-level-row 中读取物品等级
+                if (levelRow) {
+                    const ilvlMinWrapper = levelRow.querySelector('.custom-select-wrapper[data-type="ilvl-min"]');
+                    const ilvlMaxWrapper = levelRow.querySelector('.custom-select-wrapper[data-type="ilvl-max"]');
+                    if (ilvlMinWrapper) {
+                        config.ilvlMin = parseInt(ilvlMinWrapper.dataset.value);
+                        if (isNaN(config.ilvlMin)) config.ilvlMin = 0;
+                    }
+                    if (ilvlMaxWrapper) {
+                        config.ilvlMax = parseInt(ilvlMaxWrapper.dataset.value);
+                        if (isNaN(config.ilvlMax)) config.ilvlMax = 100;
+                    }
+                }
 
-                    if (ilvlMinInput) config.ilvlMin = parseInt(ilvlMinInput.value) || 1;
-                    if (ilvlMaxInput) config.ilvlMax = parseInt(ilvlMaxInput.value) || 100;
-                    if (countSelect) {
-                        const countText = countSelect.value;
+                // 从 panel 中读取词缀配置（保持不变）
+                if (panel) {
+                    const countWrapper = panel.querySelector('.custom-select-wrapper[data-type="affix-count"]');
+                    const tierWrapper = panel.querySelector('.custom-select-wrapper[data-type="affix-tier"]');
+                    if (countWrapper) {
+                        const countText = countWrapper.dataset.value || '';
                         config.affixCount = countText === '' ? 0 : parseInt(countText);
                     }
-                    if (tierSelect) {
-                        const tierText = tierSelect.value;
+                    if (tierWrapper) {
+                        const tierText = tierWrapper.dataset.value || 'T1';
                         config.affixTierMin = parseInt(tierText.replace('T', '')) || 1;
                     }
                 }
@@ -1083,17 +1187,11 @@ function attachQualityConfigEvents(modal, configCache) {
             });
         },
         validate: function() {
-            // ★ 不再检查“至少选择一种品质”
             for (const [name, config] of Object.entries(configCache.qualityConfigs)) {
                 if (config.checked) {
                     if (config.ilvlMin > config.ilvlMax) {
                         const label = RARITY_CONFIG.find(r => r.name === name)?.label || name;
                         showToast(`"${label}" 的最小等级不能大于最大等级`);
-                        return false;
-                    }
-                    if (config.ilvlMin < 1 || config.ilvlMax < 1) {
-                        const label = RARITY_CONFIG.find(r => r.name === name)?.label || name;
-                        showToast(`"${label}" 的装备等级不能小于1`);
                         return false;
                     }
                 }
@@ -1112,10 +1210,9 @@ function openBatchSellModal() {
     modal.className = "batch-modal";
     modal.innerHTML = `
     <div class="batch-box">
-        <h3 class="batch-title">批量出售装备</h3>
+        <h3 class="batch-title">批量出售装备（可多选）</h3> 
         <div class="batch-scroll-area">
             <div class="form-item">
-                <label>选择装备品质（可多选）</label>
                 <div class="quality-check-group">
                     ${buildQualityConfigHtml(batchFilterCache)}
                 </div>
