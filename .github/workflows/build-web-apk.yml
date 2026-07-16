@@ -26,31 +26,24 @@ jobs:
       - name: 全局安装 Cordova
         run: npm install -g cordova@latest
 
-      # 手动安装 Android SDK（最可靠的方式）
+      # 手动安装 Android SDK
       - name: 安装 Android SDK
         run: |
-          # 下载命令行工具
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip -q commandlinetools-linux-11076708_latest.zip
           
-          # 创建标准目录结构
           mkdir -p android-sdk/cmdline-tools
           mv cmdline-tools android-sdk/cmdline-tools/latest
           
-          # 设置环境变量供后续步骤使用
           echo "ANDROID_SDK_ROOT=$PWD/android-sdk" >> $GITHUB_ENV
           echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$PWD/android-sdk/platform-tools" >> $GITHUB_PATH
           echo "$PWD/android-sdk/build-tools/33.0.2" >> $GITHUB_PATH
           
-          # 安装 SDK 组件
           export ANDROID_SDK_ROOT=$PWD/android-sdk
           SDKMANAGER=$PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager
           
-          # 接受许可证（自动 yes）
           yes | $SDKMANAGER --licenses > /dev/null 2>&1
-          
-          # 安装所需组件
           $SDKMANAGER "platform-tools" "platforms;android-33" "build-tools;33.0.2"
           
           echo "Android SDK 安装完成"
@@ -66,13 +59,24 @@ jobs:
       - name: 配置图标与网络权限
         run: |
           cd game-apk
+          
+          # 创建图标目录
           mkdir -p res/android
           if [ -f ../../app-icon/icon.png ]; then
             cp ../../app-icon/icon.png res/android/icon.png
-            echo '<icon src="res/android/icon.png" density="xxxhdpi" />' >> config.xml
+            # 在 <widget> 标签内插入图标配置
+            sed -i '/<widget /a \ \ <icon src="res/android/icon.png" density="xxxhdpi" />' config.xml
           fi
-          echo '<access origin="*" />' >> config.xml
-          echo '<edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application"><application android:usesCleartextTraffic="true" /></edit-config>' >> config.xml
+          
+          # 在 <widget> 标签内插入访问权限
+          sed -i '/<widget /a \ \ <access origin="*" />' config.xml
+          
+          # 在 <widget> 标签内插入 edit-config（用于允许明文流量）
+          sed -i '/<widget /a \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n    <application android:usesCleartextTraffic="true" />\n  <\/edit-config>' config.xml
+          
+          echo "Config.xml 配置完成"
+          # 查看配置结果（调试用）
+          cat config.xml
 
       - name: 写入跳转网页首页
         run: |
@@ -83,7 +87,6 @@ jobs:
         run: |
           cd game-apk
           export ANDROID_SDK_ROOT=$PWD/../android-sdk
-          # 增加 Gradle 内存，避免内存不足
           export GRADLE_OPTS="-Xmx2048m -Dorg.gradle.jvmargs=-Xmx2048m"
           cordova build android --debug
 
