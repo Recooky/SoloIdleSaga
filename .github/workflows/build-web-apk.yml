@@ -28,12 +28,7 @@ jobs:
 
       - name: 安装 Android SDK 组件
         run: |
-          # 先查找 SDK 的实际位置
           echo "查找 Android SDK 位置..."
-          find /usr/local/lib/android -name "sdkmanager" 2>/dev/null || echo "未找到"
-          find /opt -name "sdkmanager" 2>/dev/null || echo "未找到"
-          
-          # 尝试常见的 SDK 路径
           if [ -f /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager ]; then
             SDK_PATH="/usr/local/lib/android/sdk"
             SDK_MANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
@@ -44,7 +39,6 @@ jobs:
             SDK_PATH="/usr/lib/android-sdk"
             SDK_MANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
           else
-            # 如果都没找到，手动下载
             echo "系统 SDK 未找到，手动下载..."
             mkdir -p $HOME/android-sdk
             cd $HOME/android-sdk
@@ -57,16 +51,13 @@ jobs:
           fi
           
           echo "使用 SDK 路径: $SDK_PATH"
-          echo "使用 sdkmanager: $SDK_MANAGER"
           
-          # 设置环境变量
           echo "ANDROID_HOME=$SDK_PATH" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$SDK_PATH" >> $GITHUB_ENV
           echo "$SDK_PATH/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$SDK_PATH/platform-tools" >> $GITHUB_PATH
           echo "$SDK_PATH/build-tools/33.0.2" >> $GITHUB_PATH
           
-          # 安装组件
           yes | $SDK_MANAGER --licenses > /dev/null 2>&1
           $SDK_MANAGER "platform-tools" "platforms;android-33" "build-tools;33.0.2"
           
@@ -80,81 +71,72 @@ jobs:
           cordova plugin add cordova-plugin-inappbrowser
           cordova plugin add cordova-plugin-network-information
 
-      - name: 配置图标和 WebView
+      - name: 配置 WebView 和图标
         run: |
           cd game-apk
           
-          # ========== 配置图标 ==========
-          # 创建图标目录
-          mkdir -p res/android
+          # ========== 1. 配置 WebView 直接加载远程网页 ==========
+          sed -i 's|<content src="index.html" />|<content src="https://recooky.github.io/SoloIdleSaga/" />|' config.xml
+          sed -i '/<widget /a \ \ <access origin="*" />' config.xml
+          sed -i '/<platform name="android">/a \ \ \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n        <application android:usesCleartextTraffic="true" />\n      <\/edit-config>' config.xml
+          sed -i '/<platform name="android">/a \ \ \ \ <allow-navigation href="https://recooky.github.io/*" />' config.xml
           
-          # 检查图标文件是否存在
+          # ========== 2. 配置图标（从单个512x512生成所有尺寸） ==========
           if [ -f ../../app-icon/icon.png ]; then
-            echo "找到图标文件，开始配置..."
+            echo "找到图标文件，生成所有尺寸..."
             
-            # 复制图标到各个密度目录
-            cp ../../app-icon/icon.png res/android/icon.png
+            # 创建 Android 资源目录
+            mkdir -p platforms/android/app/src/main/res
             
-            # 使用 ImageMagick 生成不同尺寸的图标（如果安装了）
-            # 如果没有，就使用同一个图标
-            if command -v convert &> /dev/null; then
-              echo "使用 ImageMagick 生成多尺寸图标..."
-              mkdir -p res/mipmap-mdpi
-              mkdir -p res/mipmap-hdpi
-              mkdir -p res/mipmap-xhdpi
-              mkdir -p res/mipmap-xxhdpi
-              mkdir -p res/mipmap-xxxhdpi
+            # 定义需要生成的尺寸
+            # mdpi: 48x48, hdpi: 72x72, xhdpi: 96x96, xxhdpi: 144x144, xxxhdpi: 192x192
+            declare -A sizes=(
+              ["mipmap-mdpi"]="48"
+              ["mipmap-hdpi"]="72"
+              ["mipmap-xhdpi"]="96"
+              ["mipmap-xxhdpi"]="144"
+              ["mipmap-xxxhdpi"]="192"
+            )
+            
+            # 生成普通图标和圆形图标
+            for dir in "${!sizes[@]}"; do
+              size=${sizes[$dir]}
+              target_dir="platforms/android/app/src/main/res/$dir"
+              mkdir -p "$target_dir"
               
-              convert ../../app-icon/icon.png -resize 48x48 res/mipmap-mdpi/icon.png
-              convert ../../app-icon/icon.png -resize 72x72 res/mipmap-hdpi/icon.png
-              convert ../../app-icon/icon.png -resize 96x96 res/mipmap-xhdpi/icon.png
-              convert ../../app-icon/icon.png -resize 144x144 res/mipmap-xxhdpi/icon.png
-              convert ../../app-icon/icon.png -resize 192x192 res/mipmap-xxxhdpi/icon.png
-            else
-              echo "ImageMagick 未安装，使用单个图标配置..."
-            fi
+              # 生成普通图标
+              convert ../../app-icon/icon.png -resize ${size}x${size} "$target_dir/ic_launcher.png"
+              # 生成圆形图标（裁剪为圆形）
+              convert ../../app-icon/icon.png -resize ${size}x${size} \
+                \( +clone -threshold 0 -negate -fill white -draw "circle ${size}/2,${size}/2 ${size}/2,0" \) \
+                -alpha off -compose copy_opacity -composite "$target_dir/ic_launcher_round.png"
+              
+              echo "生成 $dir (${size}x${size})"
+            done
             
-            # 在 config.xml 中配置图标（Cordova 标准方式）
-            cat >> config.xml << 'EOF'
-          <icon src="res/android/icon.png" density="mdpi" />
-          <icon src="res/android/icon.png" density="hdpi" />
-          <icon src="res/android/icon.png" density="xhdpi" />
-          <icon src="res/android/icon.png" density="xxhdpi" />
-          <icon src="res/android/icon.png" density="xxxhdpi" />
-          EOF
+            # 同时生成到 res 目录供 Cordova 配置使用
+            mkdir -p res/mipmap-mdpi res/mipmap-hdpi res/mipmap-xhdpi res/mipmap-xxhdpi res/mipmap-xxxhdpi
+            cp platforms/android/app/src/main/res/mipmap-mdpi/ic_launcher.png res/mipmap-mdpi/
+            cp platforms/android/app/src/main/res/mipmap-hdpi/ic_launcher.png res/mipmap-hdpi/
+            cp platforms/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png res/mipmap-xhdpi/
+            cp platforms/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png res/mipmap-xxhdpi/
+            cp platforms/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png res/mipmap-xxxhdpi/
             
-            echo "图标配置完成"
+            echo "图标生成完成"
           else
             echo "警告: 未找到图标文件 app-icon/icon.png"
           fi
           
-          # ========== 配置 WebView 直接加载远程网页 ==========
-          # 修改 content 的 src 指向你的网页
-          sed -i 's|<content src="index.html" />|<content src="https://recooky.github.io/SoloIdleSaga/" />|' config.xml
-          
-          # 添加访问权限
-          sed -i '/<widget /a \ \ <access origin="*" />' config.xml
-          
-          # 添加明文流量配置
-          sed -i '/<platform name="android">/a \ \ \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n        <application android:usesCleartextTraffic="true" />\n      <\/edit-config>' config.xml
-          
-          # 添加网络权限
-          sed -i '/<platform name="android">/a \ \ \ \ <allow-navigation href="https://recooky.github.io/*" />' config.xml
-          
           echo "Config.xml 配置完成"
-          cat config.xml
 
-      # 删除默认的 index.html，因为我们现在直接加载远程网页
-      - name: 删除默认首页
+      - name: 删除默认的 index.html
         run: |
           cd game-apk/www
-          # 创建一个简单的空白页面，防止加载错误
           echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Loading...</title></head><body>Loading...</body></html>' > index.html
 
       - name: 编译 APK
         run: |
           cd game-apk
-          # 从环境变量读取 SDK 路径
           export ANDROID_HOME=${ANDROID_HOME:-$HOME/android-sdk}
           export ANDROID_SDK_ROOT=$ANDROID_HOME
           export GRADLE_OPTS="-Xmx2048m -Dorg.gradle.jvmargs=-Xmx2048m"
