@@ -4,47 +4,43 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: 拉取代码
         uses: actions/checkout@v5
 
       - name: 安装系统依赖
-        run: |
-          sudo apt update
-          sudo apt install -y unzip wget
+        run: sudo apt update && sudo apt install -y unzip wget lib32stdc++6
 
-      - name: 配置 JDK 17
+      - name: JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
 
-      - name: 配置 Node.js 22
+      - name: Node 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: 全局安装 Cordova
-        run: npm install -g cordova
+        run: npm install -g cordova@latest
 
-      # 原生手动安装 Android SDK，抛弃有bug的第三方action
-      - name: 安装 Android SDK Commandline Tools
+      - name: 配置 Android SDK
         run: |
-          mkdir -p ~/android-sdk/cmdline-tools
-          cd ~/android-sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip commandlinetools-linux-11076708_latest.zip
-          mv cmdline-tools latest
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-          export PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$PATH
-          echo "PATH=$PATH" >> $GITHUB_PATH
-          # 接受协议并安装编译所需工具
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          export SDK_ROOT=$HOME/android-sdk
+          mkdir -p $SDK_ROOT/cmdline-tools
+          cd $SDK_ROOT/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q commandlinetools-linux-11076708_latest.zip
+          mkdir latest && mv cmdline-tools/* latest/
+          echo "ANDROID_HOME=$SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
+          echo "$SDK_ROOT/cmdline-tools/latest/bin:$SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          yes | sdkmanager --licenses > /dev/null
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" > /dev/null
 
-      - name: 创建Cordova安卓壳项目
+      - name: 创建 Cordova 项目
         run: |
           cordova create game-apk com.ReSoloIdleSaga.game SoloIdleSaga
           cd game-apk
@@ -52,36 +48,25 @@ jobs:
           cordova plugin add cordova-plugin-inappbrowser
           cordova plugin add cordova-plugin-network-information
 
-      - name: 配置APP图标与网络权限
+      - name: 配置图标与网络权限
         run: |
           cd game-apk
           mkdir -p res/android
-          if [ -f ../../app-icon/icon.png ]; then
-            cp ../../app-icon/icon.png res/android/icon.png
-            echo '<icon src="res/android/icon.png" density="xxxhdpi" />' >> config.xml
-          fi
+          [ -f ../../app-icon/icon.png ] && cp ../../app-icon/icon.png res/android/icon.png && echo '<icon src="res/android/icon.png" density="xxxhdpi" />' >> config.xml
           echo '<access origin="*" />' >> config.xml
-          echo '<edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">' >> config.xml
-          echo '    <application android:usesCleartextTraffic="true" />' >> config.xml
-          echo '</edit-config>' >> config.xml
+          echo '<edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application"><application android:usesCleartextTraffic="true" /></edit-config>' >> config.xml
 
-      - name: 内置跳转网页页面
+      - name: 写入跳转网页首页
         run: |
           cd game-apk/www
-          echo '<!DOCTYPE html>' > index.html
-          echo '<html>' >> index.html
-          echo '<head><meta charset="utf-8"><title>SoloIdleSaga</title></head>' >> index.html
-          echo '<body><script>' >> index.html
-          echo 'const GAME_URL = "https://recooky.github.io/SoloIdleSaga/";' >> index.html
-          echo 'window.location.href = GAME_URL;' >> index.html
-          echo '</script></body></html>' >> index.html
+          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>SoloIdleSaga</title></head><body><script>const GAME_URL = "https://recooky.github.io/SoloIdleSaga/";window.location.href = GAME_URL;</script></body></html>' > index.html
 
-      - name: 编译 Debug APK
+      - name: 编译 APK
         run: |
           cd game-apk
           cordova build android --debug
 
-      - name: 上传APK产物
+      - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
           name: WebGame-Debug-APK
