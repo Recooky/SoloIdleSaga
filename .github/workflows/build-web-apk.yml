@@ -1,7 +1,6 @@
 name: Build WebGame APK
 on:
-  push:
-    branches: [ main ]
+  # 删除 push 区块，提交代码不再自动执行
   workflow_dispatch:
 
 jobs:
@@ -15,7 +14,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # 删除 cache: 'npm' 这一行，消除锁文件报错
 
       - name: 安装 Android SDK
         uses: android-actions/setup-android@v3
