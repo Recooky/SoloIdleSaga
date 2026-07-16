@@ -1,75 +1,4 @@
-name: Build WebGame APK
-on:
-  workflow_dispatch
-
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: 拉取代码
-        uses: actions/checkout@v5
-
-      - name: 安装系统依赖
-        run: sudo apt update && sudo apt install -y unzip wget lib32stdc++6
-
-      - name: JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: temurin
-
-      - name: Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: 全局安装 Cordova
-        run: npm install -g cordova@latest
-
-      - name: 安装 Android SDK 组件
-        run: |
-          echo "查找 Android SDK 位置..."
-          if [ -f /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager ]; then
-            SDK_PATH="/usr/local/lib/android/sdk"
-            SDK_MANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
-          elif [ -f /usr/local/lib/android/sdk/cmdline-tools/tools/bin/sdkmanager ]; then
-            SDK_PATH="/usr/local/lib/android/sdk"
-            SDK_MANAGER="$SDK_PATH/cmdline-tools/tools/bin/sdkmanager"
-          elif [ -f /usr/lib/android-sdk/cmdline-tools/latest/bin/sdkmanager ]; then
-            SDK_PATH="/usr/lib/android-sdk"
-            SDK_MANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
-          else
-            echo "系统 SDK 未找到，手动下载..."
-            mkdir -p $HOME/android-sdk
-            cd $HOME/android-sdk
-            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-            unzip -q commandlinetools-linux-11076708_latest.zip
-            mkdir -p cmdline-tools
-            mv cmdline-tools cmdline-tools/latest
-            SDK_PATH="$HOME/android-sdk"
-            SDK_MANAGER="$SDK_PATH/cmdline-tools/latest/bin/sdkmanager"
-          fi
-          
-          echo "使用 SDK 路径: $SDK_PATH"
-          
-          echo "ANDROID_HOME=$SDK_PATH" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$SDK_PATH" >> $GITHUB_ENV
-          echo "$SDK_PATH/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$SDK_PATH/platform-tools" >> $GITHUB_PATH
-          echo "$SDK_PATH/build-tools/33.0.2" >> $GITHUB_PATH
-          
-          yes | $SDK_MANAGER --licenses > /dev/null 2>&1
-          $SDK_MANAGER "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-          
-          echo "Android SDK 组件安装完成"
-
-      - name: 创建 Cordova 项目
-        run: |
-          cordova create game-apk com.ReSoloIdleSaga.game SoloIdleSaga
-          cd game-apk
-          cordova platform add android
-          cordova plugin add cordova-plugin-inappbrowser
-          cordova plugin add cordova-plugin-network-information
+# ... (前面的 steps 保持不变) ...
 
       - name: 配置 WebView 和图标
         run: |
@@ -81,15 +10,17 @@ jobs:
           sed -i '/<platform name="android">/a \ \ \ \ <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">\n        <application android:usesCleartextTraffic="true" />\n      <\/edit-config>' config.xml
           sed -i '/<platform name="android">/a \ \ \ \ <allow-navigation href="https://recooky.github.io/*" />' config.xml
           
-          # ========== 2. 配置图标（从单个512x512生成所有尺寸） ==========
-          if [ -f ../../app-icon/icon.png ]; then
-            echo "找到图标文件，生成所有尺寸..."
+          # ========== 2. 配置图标（使用绝对路径确保找到图标） ==========
+          # 关键修改：使用 ${{ github.workspace }} 来定位仓库根目录
+          ICON_SOURCE="${{ github.workspace }}/app-icon/icon.png"
+          
+          if [ -f "$ICON_SOURCE" ]; then
+            echo "找到图标文件: $ICON_SOURCE，生成所有尺寸..."
             
             # 创建 Android 资源目录
             mkdir -p platforms/android/app/src/main/res
             
             # 定义需要生成的尺寸
-            # mdpi: 48x48, hdpi: 72x72, xhdpi: 96x96, xxhdpi: 144x144, xxxhdpi: 192x192
             declare -A sizes=(
               ["mipmap-mdpi"]="48"
               ["mipmap-hdpi"]="72"
@@ -104,48 +35,21 @@ jobs:
               target_dir="platforms/android/app/src/main/res/$dir"
               mkdir -p "$target_dir"
               
-              # 生成普通图标
-              convert ../../app-icon/icon.png -resize ${size}x${size} "$target_dir/ic_launcher.png"
-              # 生成圆形图标（裁剪为圆形）
-              convert ../../app-icon/icon.png -resize ${size}x${size} \
+              # 使用绝对路径的图标源文件
+              convert "$ICON_SOURCE" -resize ${size}x${size} "$target_dir/ic_launcher.png"
+              convert "$ICON_SOURCE" -resize ${size}x${size} \
                 \( +clone -threshold 0 -negate -fill white -draw "circle ${size}/2,${size}/2 ${size}/2,0" \) \
                 -alpha off -compose copy_opacity -composite "$target_dir/ic_launcher_round.png"
               
               echo "生成 $dir (${size}x${size})"
             done
             
-            # 同时生成到 res 目录供 Cordova 配置使用
-            mkdir -p res/mipmap-mdpi res/mipmap-hdpi res/mipmap-xhdpi res/mipmap-xxhdpi res/mipmap-xxxhdpi
-            cp platforms/android/app/src/main/res/mipmap-mdpi/ic_launcher.png res/mipmap-mdpi/
-            cp platforms/android/app/src/main/res/mipmap-hdpi/ic_launcher.png res/mipmap-hdpi/
-            cp platforms/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png res/mipmap-xhdpi/
-            cp platforms/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png res/mipmap-xxhdpi/
-            cp platforms/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png res/mipmap-xxxhdpi/
-            
             echo "图标生成完成"
           else
-            echo "警告: 未找到图标文件 app-icon/icon.png"
+            echo "错误: 未找到图标文件 $ICON_SOURCE"
+            exit 1
           fi
           
           echo "Config.xml 配置完成"
 
-      - name: 删除默认的 index.html
-        run: |
-          cd game-apk/www
-          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Loading...</title></head><body>Loading...</body></html>' > index.html
-
-      - name: 编译 APK
-        run: |
-          cd game-apk
-          export ANDROID_HOME=${ANDROID_HOME:-$HOME/android-sdk}
-          export ANDROID_SDK_ROOT=$ANDROID_HOME
-          export GRADLE_OPTS="-Xmx2048m -Dorg.gradle.jvmargs=-Xmx2048m"
-          
-          echo "使用 ANDROID_HOME: $ANDROID_HOME"
-          cordova build android --debug
-
-      - name: 上传 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: WebGame-Debug-APK
-          path: game-apk/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+# ... (后面的 steps 保持不变) ...
