@@ -17,8 +17,6 @@
 .highlight{
     position: relative;
     font-size: 18px; /* 字体大小 */
-    /* 建议使用较粗且圆润的字体，效果更贴近原图 */
-    font-family: "Zcool KuaiLe", "Arial Black", "PingFang SC", "Microsoft YaHei", sans-serif;
     font-weight: 900; /* 极致粗体 */
     color: #FFCF73; /* 文字主体的浅橙色 */
     letter-spacing: 2px; /* 稍微拉开字间距 */

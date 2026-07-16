@@ -75,10 +75,10 @@ const ATTR_DISPLAY_CONFIG = {
     format: val => smartFormat(val, 1),
     custom: true,   // 标记为自定义计算属性
     show: true,
-    group: '元素伤害'
+    group: '元素总伤'
     },
 };
-const ALL_ATTR_GROUPS = ['基础属性', '防御属性', '攻击伤害', '元素伤害'];
+const ALL_ATTR_GROUPS = ['基础属性', '防御属性', '攻击属性', '元素伤害'];
 
 function formatAttrVal(val,decimal = 1) {
     return Number(val.toFixed(1)).toString();
@@ -1288,7 +1288,6 @@ function openAutoSellModal() {
         <h3 class="batch-title">自动出售设置</h3>
         <div class="batch-scroll-area">
             <div class="form-item">
-                <label>选择自动出售的装备品质条件（可多选）</label>
                 <div class="quality-check-group">
                     ${buildQualityConfigHtml(autoSellConfig)}
                 </div>

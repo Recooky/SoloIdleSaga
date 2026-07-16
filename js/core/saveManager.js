@@ -72,9 +72,26 @@ window.initLocalSave = function(){
 
 // 保存存档
 window.setSaveData = function(data) {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-}
+    setLocalSaveData(data);
+    // 异步触发云端同步（如果用户已登录且 syncAll 函数存在）
+    if (typeof window.requestCloudSync === 'function') {
+        setTimeout(() => window.requestCloudSync(), 0);
+    }
+};
+// 新增：纯本地 get/set（不触发云同步）
+window.getLocalSaveData = function() {
+    const saveStr = localStorage.getItem(SAVE_KEY);
+    if (!saveStr) return getDefaultSaveData();
+    try {
+        return JSON.parse(saveStr);
+    } catch (e) {
+        return getDefaultSaveData();
+    }
+};
 
+window.setLocalSaveData = function(data) {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+};
 // 更新离线时间（退出页面时触发）
 window.updateOfflineTime = function(){
     const save = getSaveData();

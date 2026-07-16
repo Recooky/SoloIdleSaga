@@ -574,11 +574,15 @@ function initBattleModule() {
     if (logToggleBtn) {
         logToggleBtn.addEventListener('click', function() {
             document.getElementById('logModal').style.display = 'flex';
-            // 打开时自动激活战斗日志标签
             document.querySelectorAll('#logModal .log-tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelector('#logModal .log-tab-btn[data-log="battle"]').classList.add('active');
             document.getElementById('battleLogModal').classList.add('active');
             document.getElementById('dropLogModal').classList.remove('active');
+            
+            // ★ 唯一新增的两行：重置计数器后全量渲染，解决关闭重开不更新
+            _renderedBattleLogCount = 0;
+            renderBattleLog();
+            
             requestAnimationFrame(() => {
                 const battleLogModal = document.getElementById('battleLogModal');
                 if (battleLogModal) battleLogModal.scrollTop = battleLogModal.scrollHeight;

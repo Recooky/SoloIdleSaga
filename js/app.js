@@ -1,10 +1,3 @@
-// 兜底3秒强制关闭loading
-//setTimeout(() => {
-//    const loadingMask = document.getElementById('loadingMask');
-//    const mainWrap = document.getElementById('mainWrap');
-//    if (loadingMask) loadingMask.style.display = 'none';
-//    if (mainWrap) mainWrap.style.display = 'block';
-//}, 3000);
 
 // ===== 模板加载系统：从 pages/ 加载面板 HTML =====
 const PANEL_NAMES = ['town', 'character', 'battle', 'skill', 'challenge', 'forge'];
@@ -54,6 +47,14 @@ window.refreshCharacterPanel = function () {
 
 // 等待DOM全部加载完成 + 面板模板加载完成再执行事件绑定
 document.addEventListener('DOMContentLoaded', async function () {
+    // ★ 新增：强制8秒后关闭loading（兜底）
+    const loadingTimeout = setTimeout(() => {
+        const loadingMask = document.getElementById('loadingMask');
+        const mainWrap = document.getElementById('mainWrap');
+        if (loadingMask) loadingMask.style.display = 'none';
+        if (mainWrap) mainWrap.style.display = 'block';
+        console.warn('⚠️ 加载超时兜底触发，可能部分资源未加载');
+    }, 8000);
     // 先加载所有面板模板
     await loadAllTemplates();
 
@@ -133,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (logoutEditBtn) {
     logoutEditBtn.addEventListener('click', async function () {
         if (!confirm('确定要退出当前登录账号吗？')) return;
-        if (autoSaveTimer) clearInterval(autoSaveTimer);
+        if (autoSyncTimer) clearInterval(autoSyncTimer);
         const save = getSaveData();
         if(save.isBattleRunning && typeof stopBattleLoop === 'function'){
             stopBattleLoop();
@@ -154,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     })();
 
     // 然后在调用 initBattleModule 前等待它完成
-    await pageInitPromise;  // 等登录恢复完毕
+    pageInitPromise.catch(err => console.warn('云存档初始化异步失败:', err));
 
     // 3. 底部导航模块切换绑定
     const navModules = document.querySelectorAll('.nav-module');
@@ -208,10 +209,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     const loadingMask = document.getElementById('loadingMask');
     const mainWrap = document.getElementById('mainWrap');
     setTimeout(() => {
+        clearTimeout(loadingTimeout);  // ★ 新增
         if (loadingMask) loadingMask.style.display = 'none';
         if (mainWrap) mainWrap.style.display = 'block';
         adjustContainerSize();
-        // ★ 初始化后设置正确背景
         if (typeof updateGameBackground === 'function') {
             updateGameBackground();
         }
