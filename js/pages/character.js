@@ -357,7 +357,7 @@ function renderBagList() {
                 : '';
             const dc = getRarityDisplayColor(equip.rarityName);
             const iconUrl = getEquipIcon(equip);
-            return `<div class="bag-item ${rClass}" data-index="${idx}" style="position:relative;background-color:${dc.bg};border-color:${dc.border};">
+            return `<div class="bag-item ${rClass}" data-index="${idx}" style="position:relative;background-color:${dc.bg};border:2px solid ${dc.border};">
                 <img src="${iconUrl}" alt="${equip.name}" style="width:100%;height:100%;object-fit:contain;">
                 ${enhanceBadge}
                 ${lockIcon}
