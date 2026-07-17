@@ -134,6 +134,7 @@
 }
 
 .equip-tip-box {
+    width: 300px;
     background: #fdf8e5; 
     border: 2px solid #D5AB88;
     border-radius: 14px;
