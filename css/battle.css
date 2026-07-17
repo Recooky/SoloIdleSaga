@@ -267,7 +267,6 @@
     padding-left: 6px;
     width: 160px;
     position: relative;
-    height: 220px;
 }
 
 .player-hp-section {
@@ -876,7 +875,7 @@
     margin-top: auto;
     display: flex;
     justify-content: flex-end;
-    padding: 4px 16px 8px 0;
+    padding: 0px 0px 0px 0px;
     flex-shrink: 0;
     position: static;           /* 取消 fixed */
     bottom: auto; right: auto;

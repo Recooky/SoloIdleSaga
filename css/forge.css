@@ -179,25 +179,33 @@
     min-height: 0;
     display: flex;
     justify-content: center;
-    padding-top: 20px;
+    padding-top: 10px;
     padding-bottom: 12px;
 }
 
-.forge-compare-col {
-    width: 100%;
-    max-width: 340px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 /* ★ 关键：让 equip-tip-box 内部可滚动 */
-.forge-compare-col .equip-tip-box {
+.forge-compare-col {
     width: 90%;
     max-width: none;
     padding: 14px 12px;
+    max-height: none;           /* 限制最大高度，超出的内容滚动 */
+    overflow: visible;
+    display: flex;            
+    flex-direction: column;   
+    align-items: center;
+}
+.equip-forge-box {
+    width: 90%;
+    max-width: 320px;
+    padding: 18px 22px;
     max-height: 50vh;           /* 限制最大高度，超出的内容滚动 */
     overflow-y: auto;
+    background: #fdf8e5; 
+    border: 2px solid #D5AB88;
+    border-radius: 14px;
+    box-sizing: border-box; 
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 /* 分隔线样式（确保显示） */
@@ -221,7 +229,7 @@
     gap: 6px;
 }
 .forge-equip-name {
-    flex: 0 0 80px;
+    flex: 0 0 90px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -263,7 +271,7 @@
 .forge-action-area {
     flex-shrink: 0;             /* 不被压缩 */
     padding: 20px 24px;
-    width: 100%;
+    width: 90%;
     max-width: 340px;
     margin: 0 auto 12px auto;
     box-sizing: border-box;
@@ -274,7 +282,7 @@
     display: grid;
     grid-template-columns: 130px 1fr;
     padding: 6px 0;
-    font-size: 14px;
+    font-size: 13px;
     color: #4a2c11;
     align-items: center;
 }
@@ -347,4 +355,450 @@
     background: #475569;
     color: #94a3b8;
     cursor: not-allowed;
+}
+/* ========== 强化装备图标展示区 ========== */
+.forge-equip-icon-area {
+    display: flex;
+    padding: 10px 10px;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.forge-equip-icon-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 6px;
+}
+
+.forge-equip-icon-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.forge-equip-name-line {
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* 强化等级徽章 - 覆盖背包格子的样式，在此区域保持统一 */
+.forge-equip-icon-wrap .enhance-badge-hover {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #f9cf69;
+    -webkit-text-stroke: 0.5px #5c2d13;
+    border-radius: 3px;
+    padding: 0 3px;
+    line-height: 1.4;
+    pointer-events: none;
+}
+
+/* 装等行居中 */
+.forge-equip-level-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    gap: 4px;
+}
+.forge-equip-level-row .equip-level {
+    text-align: center;
+    font-size: 13px;
+    color: #4a2c11;
+}
+
+/* ========== 改造操作区（固定底部） ========== */
+.forge-reform-area {
+    flex-shrink: 0;
+    width: 90%;
+    max-width: 340px;
+    margin: 0 auto 12px auto;
+    box-sizing: border-box;
+    border-radius: 14px;
+}
+
+/* ========== 词缀选择行 ========== */
+.reform-affix-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 6px 6px 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #f5efe4;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+.reform-affix-row:hover {
+    border-color: #D5AB88;
+    background: #efe6d6;
+}
+.reform-affix-row.reform-affix-locked {
+    background: #e8dcc8;
+    border: 1px solid #D5AB88;
+}
+
+.reform-affix-info {
+    flex: 0 0 90px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #4a2c11;
+    min-width: 0;
+}
+.reform-affix-info .affix-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.reform-affix-info .affix-value {
+    color: #6b4c2a;
+}
+
+.reform-affix-action {
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.reform-select-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    background: linear-gradient(135deg, #d4a373, #c18f5b);
+    border: 1px solid #a67c52;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.reform-select-btn:hover {
+    background: linear-gradient(135deg, #c18f5b, #a67c52);
+    transform: translateY(-1px);
+}
+
+.reform-lock-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 11px;
+    background: #8B6914;
+    border-radius: 4px;
+    color: #fdf8e5;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ========== 目标词缀列表 ========== */
+.reform-target-list {
+    display: grid;
+    gap: 4px;
+    overflow-y: auto;
+    padding: 4px 2px;
+}
+
+.reform-target-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    background: #f5efe4;
+    border: 1px solid #e0d0bc;
+    border-radius: 5px;
+    font-size: 11px;
+    color: #4a2c11;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    margin:5px 4px;
+}
+.reform-target-item:hover {
+    background: #efe6d6;
+    border-color: #D5AB88;
+}
+.reform-target-item.selected {
+    background: #dfd0b8;
+    border-color: #8B6914;
+}
+.reform-target-item.is-current {
+    border-style: dashed;
+    border-color: #a67c52;
+}
+
+.reform-target-name {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.reform-target-tier {
+    font-size: 10px;
+    color: #8a7a6a;
+    white-space: nowrap;
+}
+.reform-target-current-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+    background: #d4a373;
+    border-radius: 3px;
+    color: #fff;
+    white-space: nowrap;
+}
+.reform-target-check {
+    color: #22c55e;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* ========== T阶标签颜色 ========== */
+.affix-tier {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+.tier-1  { color: #9ca3af; background: rgba(156,163,175,0.12); }
+.tier-2  { color: #6b7280; background: rgba(107,114,128,0.12); }
+.tier-3  { color: #4b5563; background: rgba(75,85,99,0.12); }
+.tier-4  { color: #2563eb; background: rgba(37,99,235,0.10); }
+.tier-5  { color: #7c3aed; background: rgba(124,58,237,0.10); }
+.tier-6  { color: #9333ea; background: rgba(147,51,234,0.10); }
+.tier-7  { color: #c026d3; background: rgba(192,38,211,0.10); }
+.tier-8  { color: #e11d48; background: rgba(225,29,72,0.10); }
+.tier-9  { color: #ea580c; background: rgba(234,88,12,0.10); }
+.tier-10 { color: #d97706; background: rgba(217,119,6,0.12); }
+.tier-11 { color: #ca8a04; background: rgba(202,138,4,0.12); }
+.tier-12 { color: #a16207; background: rgba(161,98,7,0.15); }
+
+/* ========== 改造面板左右布局（新） ========== */
+.reform-layout {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    min-height: 0;
+    overflow: hidden;
+    padding: 8px 4px;
+}
+
+.reform-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 0 4px;
+}
+
+.reform-right {
+    width: 160px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    background: #f5efe4;
+    border: 1px solid #D5AB88;
+    border-radius: 8px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.reform-bottom {
+    flex-shrink: 0;
+    padding: 8px 0px 30px 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 左侧装备头部 */
+.reform-equip-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 6px 16px 6px;
+    border-bottom: 1px solid #e0d0bc;
+    margin-bottom: 6px;
+}
+
+.reform-equip-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.reform-equip-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.reform-equip-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.reform-equip-name {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reform-equip-level {
+    font-size: 11px;
+    color: #8a7a6a;
+}
+
+.reform-reformed-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: #8B6914;
+    border-radius: 4px;
+    color: #fdf8e5;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.reform-affix-section-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b4c2a;
+    padding: 4px 6px 12px 6px;
+}
+
+/* 词缀行选中态 */
+.reform-affix-row.reform-affix-selected {
+    background: #e8dcc8;
+    border: 1px solid #8B6914;
+}
+
+/* 词缀行禁用态 */
+.reform-affix-row.reform-affix-disabled {
+    pointer-events: none;
+}
+/* 可点击词缀：亮色背景 + 指针 */
+.reform-affix-row.reform-affix-clickable {
+    background: #f5e6c8 !important;
+    cursor: pointer;
+}
+.reform-affix-row.reform-affix-clickable:hover {
+    background: #ead8b0 !important;
+}
+/* 禁用词缀：保持较暗 */
+.reform-affix-row.reform-affix-disabled {
+    background: #d0c0a8;
+    opacity: 0.6;
+    cursor: default;
+}
+.reform-empty {
+    padding: 14px 6px;
+    color: #8a7a6a;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* 右侧参考词缀 */
+.reform-ref-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a2c11;
+    margin-bottom: 2px;
+}
+
+.reform-ref-subtitle {
+    font-size: 10px;
+    color: #8a7a6a;
+    margin-bottom: 8px;
+}
+
+.reform-ref-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.reform-ref-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    color: #4a2c11;
+    border-radius: 4px;
+    background: #faf5eb;
+}
+
+.reform-ref-item.reform-ref-owned {
+    background: #e8dcc8;
+}
+
+.reform-ref-item-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reform-ref-item-tier {
+    font-size: 10px;
+    color: #8a7a6a;
+    white-space: nowrap;
+}
+
+.reform-ref-owned-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+    background: #8B6914;
+    border-radius: 3px;
+    color: #fdf8e5;
+    white-space: nowrap;
+}
+
+/* 底部操作区 */
+.reform-bottom-hint {
+    padding: 16px 0;
+    font-size: 13px;
+    color: #8a7a6a;
+    text-align: center;
+}
+
+.reform-cost-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: #4a2c11;
+}
+
+.reform-cost-label {
+    font-weight: 500;
+}
+
+.reform-cost-value {
+    font-weight: 700;
+    font-family: "Courier New", "Consolas", monospace;
+    letter-spacing: 1px;
 }

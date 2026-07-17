@@ -270,6 +270,7 @@
 .affix-value {
     flex: 1; 
     color: #4a2c11;
+    font-size: 12px;
     font-weight: 500;
 }
 
@@ -1027,4 +1028,9 @@
     cursor: default;
     pointer-events: none;  /* 禁止点击 */
     opacity: 0.6;
+}
+
+/* 可选：其他物品专用数量徽章微调 */
+.other-item .enhance-badge-hover {
+    font-size: 14px; /* 比如稍微小一点 */
 }

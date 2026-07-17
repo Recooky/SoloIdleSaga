@@ -17,7 +17,9 @@
           base.href = match ? match[0] : '/';
         } else {
           // 本地测试环境（Live Server / localhost）
-          base.href = '/';
+          var path = window.location.pathname;
+          var dir = path.substring(0, path.lastIndexOf('/') + 1);
+          base.href = dir;
         }
         document.head.prepend(base);
       })();
@@ -269,7 +271,12 @@
 
   // 1. 获取图片清单（使用相对于当前页面的正确路径）
   fetch('./assets/images/manifest.json')
-    .then(function(resp) { return resp.json(); })
+    .then(function(resp) {
+      if (!resp.ok) {
+        throw new Error('HTTP status ' + resp.status);
+      }
+      return resp.json();
+    })
     .then(function(manifest) {
       totalImages = manifest.images.length;
 
@@ -342,7 +349,7 @@
       }
     })
     .catch(function() {
-      // manifest.json 获取失败，直接进入游戏
+      console.error('Failed to load manifest.json:', err); 
       hideMask();
     });
 })();

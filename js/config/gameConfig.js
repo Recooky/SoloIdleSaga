@@ -495,145 +495,145 @@ window.POSITION_AFFIX_RULES = {
 
 // ===================== 全部位装备基础库 =====================
 window.EQUIP_LIB = {
-        weapon_sword: [
-        {ilvl:[1,10],name:"生锈短剑", icon:"./assets/images/equip/T1/j.png",base:{atk:10}},
-        {ilvl:[11,20],name:"铁制长剑", icon:"./assets/images/equip/T2/j.png",base:{atk:30}},
-        {ilvl:[21,30],name:"精钢大剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:60}},
-        {ilvl:[31,40],name:"岩纹巨剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:120}},
-        {ilvl:[41,50],name:"熔岩炎剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:200}},
-        {ilvl:[51,60],name:"符文阔剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:320}},
-        {ilvl:[61,70],name:"幽魂斩刃", icon:"./assets/images/icons/slot-weapon.png",base:{atk:440}},
-        {ilvl:[71,80],name:"地狱重剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:580}},
-        {ilvl:[81,90],name:"虚空龙剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:740}},
-        {ilvl:[91,100],name:"深渊圣剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:900}},
-        {ilvl:[101,110],name:"湮灭神剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:1100}},
-        {ilvl:[111,120],name:"星界天剑", icon:"./assets/images/icons/slot-weapon.png",base:{atk:1360}}
+    weapon_sword: [
+        {ilvl:[1,10],  name:"生锈短剑", icon:"./assets/images/equip/T1/j.png",  base:{atk:10}},
+        {ilvl:[11,20], name:"铁制长剑", icon:"./assets/images/equip/T2/j.png",  base:{atk:30}},
+        {ilvl:[21,30], name:"精钢大剑", icon:"./assets/images/equip/T3/j.png",  base:{atk:60}},
+        {ilvl:[31,40], name:"岩纹巨剑", icon:"./assets/images/equip/T4/j.png",  base:{atk:120}},
+        {ilvl:[41,50], name:"熔岩炎剑", icon:"./assets/images/equip/T5/j.png",  base:{atk:200}},
+        {ilvl:[51,60], name:"符文阔剑", icon:"./assets/images/equip/T6/j.png",  base:{atk:320}},
+        {ilvl:[61,70], name:"幽魂斩刃", icon:"./assets/images/equip/T7/j.png",  base:{atk:440}},
+        {ilvl:[71,80], name:"地狱重剑", icon:"./assets/images/equip/T8/j.png",  base:{atk:580}},
+        {ilvl:[81,90], name:"虚空龙剑", icon:"./assets/images/equip/T9/j.png",  base:{atk:740}},
+        {ilvl:[91,100],name:"深渊圣剑", icon:"./assets/images/equip/T10/j.png", base:{atk:900}},
+        {ilvl:[101,110],name:"湮灭神剑", icon:"./assets/images/equip/T11/j.png",base:{atk:1100}},
+        {ilvl:[111,120],name:"星界天剑", icon:"./assets/images/equip/T12/j.png",base:{atk:1360}}
     ],
-     weapon_bow: [
-        {ilvl:[1,10],   name:"短弓", icon:"./assets/images/equip/T1/g.png",base:{atk:6,   eleDmg:7}},
-        {ilvl:[11,20],  name:"长弓", icon:"./assets/images/equip/T2/g.png",base:{atk:20,  eleDmg:20}},
-        {ilvl:[21,30],  name:"精钢战弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:40,  eleDmg:40}},
-        {ilvl:[31,40],  name:"岩纹猎弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:80,  eleDmg:80}},
-        {ilvl:[41,50],  name:"熔岩炎弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:140, eleDmg:140}},
-        {ilvl:[51,60],  name:"符文长弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:220, eleDmg:220}},
-        {ilvl:[61,70],  name:"幽魂灵弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:290, eleDmg:310}},
-        {ilvl:[71,80],  name:"地狱魔弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:380, eleDmg:420}},
-        {ilvl:[81,90],  name:"虚空龙弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:490, eleDmg:530}},
-        {ilvl:[91,100], name:"深渊圣弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:620, eleDmg:650}},
-        {ilvl:[101,110],name:"湮灭神弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:830, eleDmg:790}},
-        {ilvl:[111,120],name:"星界天弓", icon:"./assets/images/icons/slot-weapon.png",base:{atk:880,eleDmg:980}}
+    weapon_bow: [
+        {ilvl:[1,10],   name:"短弓",     icon:"./assets/images/equip/T1/g.png",  base:{atk:6,   eleDmg:7}},
+        {ilvl:[11,20],  name:"长弓",     icon:"./assets/images/equip/T2/g.png",  base:{atk:20,  eleDmg:20}},
+        {ilvl:[21,30],  name:"精钢战弓", icon:"./assets/images/equip/T3/g.png",  base:{atk:40,  eleDmg:40}},
+        {ilvl:[31,40],  name:"岩纹猎弓", icon:"./assets/images/equip/T4/g.png",  base:{atk:80,  eleDmg:80}},
+        {ilvl:[41,50],  name:"熔岩炎弓", icon:"./assets/images/equip/T5/g.png",  base:{atk:140, eleDmg:140}},
+        {ilvl:[51,60],  name:"符文长弓", icon:"./assets/images/equip/T6/g.png",  base:{atk:220, eleDmg:220}},
+        {ilvl:[61,70],  name:"幽魂灵弓", icon:"./assets/images/equip/T7/g.png",  base:{atk:290, eleDmg:310}},
+        {ilvl:[71,80],  name:"地狱魔弓", icon:"./assets/images/equip/T8/g.png",  base:{atk:380, eleDmg:420}},
+        {ilvl:[81,90],  name:"虚空龙弓", icon:"./assets/images/equip/T9/g.png",  base:{atk:490, eleDmg:530}},
+        {ilvl:[91,100], name:"深渊圣弓", icon:"./assets/images/equip/T10/g.png", base:{atk:620, eleDmg:650}},
+        {ilvl:[101,110],name:"湮灭神弓", icon:"./assets/images/equip/T11/g.png",base:{atk:830, eleDmg:790}},
+        {ilvl:[111,120],name:"星界天弓", icon:"./assets/images/equip/T12/g.png",base:{atk:880, eleDmg:980}}
     ],
     weapon_staff: [
-        {ilvl:[1,10],   name:"木制法杖", icon:"./assets/images/equip/T1/f.png",base:{eleDmg:12}},
-        {ilvl:[11,20],  name:"水晶法杖", icon:"./assets/images/equip/T2/f.png",base:{eleDmg:36}},
-        {ilvl:[21,30],  name:"铁芯魔杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:72}},
-        {ilvl:[31,40],  name:"岩纹秘杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:144}},
-        {ilvl:[41,50],  name:"熔岩焰杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:240}},
-        {ilvl:[51,60],  name:"符文法杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:384}},
-        {ilvl:[61,70],  name:"幽魂灵杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:528}},
-        {ilvl:[71,80],  name:"地狱魔杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:696}},
-        {ilvl:[81,90],  name:"虚空龙杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:888}},
-        {ilvl:[91,100], name:"深渊圣杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:1080}},
-        {ilvl:[101,110],name:"湮灭神杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:1320}},
-        {ilvl:[111,120],name:"星界天杖", icon:"./assets/images/icons/slot-weapon.png",base:{eleDmg:1632}}
+        {ilvl:[1,10],   name:"木制法杖", icon:"./assets/images/equip/T1/f.png",  base:{eleDmg:12}},
+        {ilvl:[11,20],  name:"水晶法杖", icon:"./assets/images/equip/T2/f.png",  base:{eleDmg:36}},
+        {ilvl:[21,30],  name:"铁芯魔杖", icon:"./assets/images/equip/T3/f.png",  base:{eleDmg:72}},
+        {ilvl:[31,40],  name:"岩纹秘杖", icon:"./assets/images/equip/T4/f.png",  base:{eleDmg:144}},
+        {ilvl:[41,50],  name:"熔岩焰杖", icon:"./assets/images/equip/T5/f.png",  base:{eleDmg:240}},
+        {ilvl:[51,60],  name:"符文法杖", icon:"./assets/images/equip/T6/f.png",  base:{eleDmg:384}},
+        {ilvl:[61,70],  name:"幽魂灵杖", icon:"./assets/images/equip/T7/f.png",  base:{eleDmg:528}},
+        {ilvl:[71,80],  name:"地狱魔杖", icon:"./assets/images/equip/T8/f.png",  base:{eleDmg:696}},
+        {ilvl:[81,90],  name:"虚空龙杖", icon:"./assets/images/equip/T9/f.png",  base:{eleDmg:888}},
+        {ilvl:[91,100], name:"深渊圣杖", icon:"./assets/images/equip/T10/f.png", base:{eleDmg:1080}},
+        {ilvl:[101,110],name:"湮灭神杖", icon:"./assets/images/equip/T11/f.png",base:{eleDmg:1320}},
+        {ilvl:[111,120],name:"星界天杖", icon:"./assets/images/equip/T12/f.png",base:{eleDmg:1632}}
     ],
     helmet: [
-        {ilvl:[1,10],name:"粗布兜帽", icon:"./assets/images/equip/T1/tk.png",base:{hp:60,dodge:10}},
-        {ilvl:[11,20],name:"皮革头盔", icon:"./assets/images/equip/T2/tk.png",base:{hp:110,dodge:18}},
-        {ilvl:[21,30],name:"精钢战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:190,dodge:30}},
-        {ilvl:[31,40],name:"岩纹战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:300,dodge:48}},
-        {ilvl:[41,50],name:"熔岩战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:425,dodge:68}},
-        {ilvl:[51,60],name:"符文战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:575,dodge:92}},
-        {ilvl:[61,70],name:"幽魂战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:800,dodge:125}},
-        {ilvl:[71,80],name:"地狱战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:1050,dodge:160}},
-        {ilvl:[81,90],name:"虚空战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:1375,dodge:200}},
-        {ilvl:[91,100],name:"深渊战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:1750,dodge:245}},
-        {ilvl:[101,110],name:"湮灭战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:2150,dodge:290}},
-        {ilvl:[111,120],name:"星界战盔", icon:"./assets/images/icons/slot-helmet.png",base:{hp:2600,dodge:345}}
+        {ilvl:[1,10],  name:"粗布兜帽", icon:"./assets/images/equip/T1/tk.png",  base:{hp:60,  dodge:10}},
+        {ilvl:[11,20], name:"皮革头盔", icon:"./assets/images/equip/T2/tk.png",  base:{hp:110, dodge:18}},
+        {ilvl:[21,30], name:"精钢战盔", icon:"./assets/images/equip/T3/tk.png",  base:{hp:190, dodge:30}},
+        {ilvl:[31,40], name:"岩纹战盔", icon:"./assets/images/equip/T4/tk.png",  base:{hp:300, dodge:48}},
+        {ilvl:[41,50], name:"熔岩战盔", icon:"./assets/images/equip/T5/tk.png",  base:{hp:425, dodge:68}},
+        {ilvl:[51,60], name:"符文战盔", icon:"./assets/images/equip/T6/tk.png",  base:{hp:575, dodge:92}},
+        {ilvl:[61,70], name:"幽魂战盔", icon:"./assets/images/equip/T7/tk.png",  base:{hp:800, dodge:125}},
+        {ilvl:[71,80], name:"地狱战盔", icon:"./assets/images/equip/T8/tk.png",  base:{hp:1050,dodge:160}},
+        {ilvl:[81,90], name:"虚空战盔", icon:"./assets/images/equip/T9/tk.png",  base:{hp:1375,dodge:200}},
+        {ilvl:[91,100],name:"深渊战盔", icon:"./assets/images/equip/T10/tk.png", base:{hp:1750,dodge:245}},
+        {ilvl:[101,110],name:"湮灭战盔", icon:"./assets/images/equip/T11/tk.png",base:{hp:2150,dodge:290}},
+        {ilvl:[111,120],name:"星界战盔", icon:"./assets/images/equip/T12/tk.png",base:{hp:2600,dodge:345}}
     ],
     armor: [
-        {ilvl:[1,10],name:"粗布护甲", icon:"./assets/images/equip/T1/yf.png",base:{hp:120,def:18}},
-        {ilvl:[11,20],name:"皮革甲胄", icon:"./assets/images/equip/T2/yf.png",base:{hp:220,def:32}},
-        {ilvl:[21,30],name:"精钢战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:380,def:55}},
-        {ilvl:[31,40],name:"岩纹战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:600,def:85}},
-        {ilvl:[41,50],name:"熔岩战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:850,def:120}},
-        {ilvl:[51,60],name:"符文战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:1150,def:165}},
-        {ilvl:[61,70],name:"幽魂战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:1600,def:220}},
-        {ilvl:[71,80],name:"地狱战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:2100,def:285}},
-        {ilvl:[81,90],name:"虚空战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:2750,def:360}},
-        {ilvl:[91,100],name:"深渊战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:3500,def:440}},
-        {ilvl:[101,110],name:"湮灭战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:4300,def:520}},
-        {ilvl:[111,120],name:"星界战甲", icon:"./assets/images/icons/slot-armor.png",base:{hp:5200,def:620}}
+        {ilvl:[1,10],  name:"粗布护甲", icon:"./assets/images/equip/T1/yf.png",  base:{hp:120, def:18}},
+        {ilvl:[11,20], name:"皮革甲胄", icon:"./assets/images/equip/T2/yf.png",  base:{hp:220, def:32}},
+        {ilvl:[21,30], name:"精钢战甲", icon:"./assets/images/equip/T3/yf.png",  base:{hp:380, def:55}},
+        {ilvl:[31,40], name:"岩纹战甲", icon:"./assets/images/equip/T4/yf.png",  base:{hp:600, def:85}},
+        {ilvl:[41,50], name:"熔岩战甲", icon:"./assets/images/equip/T5/yf.png",  base:{hp:850, def:120}},
+        {ilvl:[51,60], name:"符文战甲", icon:"./assets/images/equip/T6/yf.png",  base:{hp:1150,def:165}},
+        {ilvl:[61,70], name:"幽魂战甲", icon:"./assets/images/equip/T7/yf.png",  base:{hp:1600,def:220}},
+        {ilvl:[71,80], name:"地狱战甲", icon:"./assets/images/equip/T8/yf.png",  base:{hp:2100,def:285}},
+        {ilvl:[81,90], name:"虚空战甲", icon:"./assets/images/equip/T9/yf.png",  base:{hp:2750,def:360}},
+        {ilvl:[91,100],name:"深渊战甲", icon:"./assets/images/equip/T10/yf.png", base:{hp:3500,def:440}},
+        {ilvl:[101,110],name:"湮灭战甲", icon:"./assets/images/equip/T11/yf.png",base:{hp:4300,def:520}},
+        {ilvl:[111,120],name:"星界战甲", icon:"./assets/images/equip/T12/yf.png",base:{hp:5200,def:620}}
     ],
     pants: [
-        {ilvl:[1,10],   name:"粗布短裤", icon:"./assets/images/equip/T1/kz.png",base:{def:30}},
-        {ilvl:[11,20],  name:"皮革长腿", icon:"./assets/images/equip/T2/kz.png",base:{def:58}},
-        {ilvl:[21,30],  name:"精钢护腿", icon:"./assets/images/icons/slot-pants.png",base:{def:100}},
-        {ilvl:[31,40],  name:"岩纹腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:150}},
-        {ilvl:[41,50],  name:"熔岩腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:220}},
-        {ilvl:[51,60],  name:"符文腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:310}},
-        {ilvl:[61,70],  name:"幽魂腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:420}},
-        {ilvl:[71,80],  name:"地狱腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:550}},
-        {ilvl:[81,90],  name:"虚空腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:700}},
-        {ilvl:[91,100], name:"深渊腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:860}},
-        {ilvl:[101,110],name:"湮灭腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:1020}},
-        {ilvl:[111,120],name:"星界腿铠", icon:"./assets/images/icons/slot-pants.png",base:{def:1200}}
+        {ilvl:[1,10],   name:"粗布短裤", icon:"./assets/images/equip/T1/kz.png",  base:{def:30}},
+        {ilvl:[11,20],  name:"皮革长腿", icon:"./assets/images/equip/T2/kz.png",  base:{def:58}},
+        {ilvl:[21,30],  name:"精钢护腿", icon:"./assets/images/equip/T3/kz.png",  base:{def:100}},
+        {ilvl:[31,40],  name:"岩纹腿铠", icon:"./assets/images/equip/T4/kz.png",  base:{def:150}},
+        {ilvl:[41,50],  name:"熔岩腿铠", icon:"./assets/images/equip/T5/kz.png",  base:{def:220}},
+        {ilvl:[51,60],  name:"符文腿铠", icon:"./assets/images/equip/T6/kz.png",  base:{def:310}},
+        {ilvl:[61,70],  name:"幽魂腿铠", icon:"./assets/images/equip/T7/kz.png",  base:{def:420}},
+        {ilvl:[71,80],  name:"地狱腿铠", icon:"./assets/images/equip/T8/kz.png",  base:{def:550}},
+        {ilvl:[81,90],  name:"虚空腿铠", icon:"./assets/images/equip/T9/kz.png",  base:{def:700}},
+        {ilvl:[91,100], name:"深渊腿铠", icon:"./assets/images/equip/T10/kz.png", base:{def:860}},
+        {ilvl:[101,110],name:"湮灭腿铠", icon:"./assets/images/equip/T11/kz.png",base:{def:1020}},
+        {ilvl:[111,120],name:"星界腿铠", icon:"./assets/images/equip/T12/kz.png",base:{def:1200}}
     ],
     glove: [
-        {ilvl:[1,10],   name:"粗布手套", icon:"./assets/images/equip/T1/st.png",base:{hp:40, dodge:8}},
-        {ilvl:[11,20],  name:"皮革手套", icon:"./assets/images/equip/T2/st.png",base:{hp:80, dodge:14}},
-        {ilvl:[21,30],  name:"精钢护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:140, dodge:24}},
-        {ilvl:[31,40],  name:"岩纹护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:220, dodge:38}},
-        {ilvl:[41,50],  name:"熔岩护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:320, dodge:54}},
-        {ilvl:[51,60],  name:"符文护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:440, dodge:74}},
-        {ilvl:[61,70],  name:"幽魂护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:600, dodge:100}},
-        {ilvl:[71,80],  name:"地狱护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:800, dodge:130}},
-        {ilvl:[81,90],  name:"虚空护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:1050, dodge:165}},
-        {ilvl:[91,100], name:"深渊护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:1350, dodge:205}},
-        {ilvl:[101,110],name:"湮灭护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:1700, dodge:245}},
-        {ilvl:[111,120],name:"星界护手", icon:"./assets/images/icons/slot-glove.png",base:{hp:2100, dodge:295}}
+        {ilvl:[1,10],   name:"粗布手套", icon:"./assets/images/equip/T1/st.png",  base:{hp:40,  dodge:8}},
+        {ilvl:[11,20],  name:"皮革手套", icon:"./assets/images/equip/T2/st.png",  base:{hp:80,  dodge:14}},
+        {ilvl:[21,30],  name:"精钢护手", icon:"./assets/images/equip/T3/st.png",  base:{hp:140, dodge:24}},
+        {ilvl:[31,40],  name:"岩纹护手", icon:"./assets/images/equip/T4/st.png",  base:{hp:220, dodge:38}},
+        {ilvl:[41,50],  name:"熔岩护手", icon:"./assets/images/equip/T5/st.png",  base:{hp:320, dodge:54}},
+        {ilvl:[51,60],  name:"符文护手", icon:"./assets/images/equip/T6/st.png",  base:{hp:440, dodge:74}},
+        {ilvl:[61,70],  name:"幽魂护手", icon:"./assets/images/equip/T7/st.png",  base:{hp:600, dodge:100}},
+        {ilvl:[71,80],  name:"地狱护手", icon:"./assets/images/equip/T8/st.png",  base:{hp:800, dodge:130}},
+        {ilvl:[81,90],  name:"虚空护手", icon:"./assets/images/equip/T9/st.png",  base:{hp:1050,dodge:165}},
+        {ilvl:[91,100], name:"深渊护手", icon:"./assets/images/equip/T10/st.png", base:{hp:1350,dodge:205}},
+        {ilvl:[101,110],name:"湮灭护手", icon:"./assets/images/equip/T11/st.png",base:{hp:1700,dodge:245}},
+        {ilvl:[111,120],name:"星界护手", icon:"./assets/images/equip/T12/st.png",base:{hp:2100,dodge:295}}
     ],
     boot: [
-        {ilvl:[1,10],name:"粗布短靴", icon:"./assets/images/equip/T1/xz.png",base:{def:8,dodge:8}},
-        {ilvl:[11,20],name:"皮革长靴", icon:"./assets/images/equip/T2/xz.png",base:{def:14,dodge:14}},
-        {ilvl:[21,30],name:"精钢战靴", icon:"./assets/images/icons/slot-boot.png",base:{def:24,dodge:24}},
-        {ilvl:[31,40],name:"岩纹战靴", icon:"./assets/images/icons/slot-boot.png",base:{def:38,dodge:38}},
-        {ilvl:[41,50],name:"熔岩战靴", icon:"./assets/images/icons/slot-boot.png",base:{def:54,dodge:54}},
-        {ilvl:[51,60],name:"符文战靴", icon:"./assets/images/icons/slot-boot.png",base:{def:74,dodge:74}},
-        {ilvl:[61,70],name:"幽魂战靴", icon:"./assets/images/icons/slot-boot.png",base:{def:100,dodge:100}},
-        {ilvl:[71,80],name:"地狱战胫", icon:"./assets/images/icons/slot-boot.png",base:{def:130,dodge:130}},
-        {ilvl:[81,90],name:"虚空战胫", icon:"./assets/images/icons/slot-boot.png",base:{def:165,dodge:165}},
-        {ilvl:[91,100],name:"深渊战靴", icon:"./assets/images/icons/slot-boot.png",base:{def:205,dodge:205}},
-        {ilvl:[101,110],name:"湮灭战靴", icon:"./assets/images/icons/slot-boot.png",base:{def:245,dodge:245}},
-        {ilvl:[111,120],name:"星界战靴", icon:"./assets/images/icons/slot-boot.png",base:{def:295,dodge:295}}
+        {ilvl:[1,10],  name:"粗布短靴", icon:"./assets/images/equip/T1/xz.png",  base:{def:8,  dodge:8}},
+        {ilvl:[11,20], name:"皮革长靴", icon:"./assets/images/equip/T2/xz.png",  base:{def:14, dodge:14}},
+        {ilvl:[21,30], name:"精钢战靴", icon:"./assets/images/equip/T3/xz.png",  base:{def:24, dodge:24}},
+        {ilvl:[31,40], name:"岩纹战靴", icon:"./assets/images/equip/T4/xz.png",  base:{def:38, dodge:38}},
+        {ilvl:[41,50], name:"熔岩战靴", icon:"./assets/images/equip/T5/xz.png",  base:{def:54, dodge:54}},
+        {ilvl:[51,60], name:"符文战靴", icon:"./assets/images/equip/T6/xz.png",  base:{def:74, dodge:74}},
+        {ilvl:[61,70], name:"幽魂战靴", icon:"./assets/images/equip/T7/xz.png",  base:{def:100,dodge:100}},
+        {ilvl:[71,80], name:"地狱战靴", icon:"./assets/images/equip/T8/xz.png",  base:{def:130,dodge:130}},
+        {ilvl:[81,90], name:"虚空战靴", icon:"./assets/images/equip/T9/xz.png",  base:{def:165,dodge:165}},
+        {ilvl:[91,100],name:"深渊战靴", icon:"./assets/images/equip/T10/xz.png", base:{def:205,dodge:205}},
+        {ilvl:[101,110],name:"湮灭战靴", icon:"./assets/images/equip/T11/xz.png",base:{def:245,dodge:245}},
+        {ilvl:[111,120],name:"星界战靴", icon:"./assets/images/equip/T12/xz.png",base:{def:295,dodge:295}}
     ],
     ring: [
-        {ilvl:[1,10],  name:"黄铜指环", icon:"./assets/images/equip/T1/jz.png",base:{hit:10,   critDmg:0.02}},
-        {ilvl:[11,20], name:"白银戒环", icon:"./assets/images/equip/T2/jz.png",base:{hit:30,   critDmg:0.05}},
-        {ilvl:[21,30], name:"黄金魔戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:60,   critDmg:0.08}},
-        {ilvl:[31,40], name:"岩纹秘戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:100,  critDmg:0.115}},
-        {ilvl:[41,50], name:"熔岩焰戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:150,  critDmg:0.15}},
-        {ilvl:[51,60], name:"符文法戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:210,  critDmg:0.185}},
-        {ilvl:[61,70], name:"幽魂灵戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:280,  critDmg:0.22}},
-        {ilvl:[71,80], name:"地狱魔戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:360,  critDmg:0.255}},
-        {ilvl:[81,90], name:"虚空龙戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:450,  critDmg:0.29}},
-        {ilvl:[91,100],name:"深渊圣指", icon:"./assets/images/icons/slot-ring.png",base:{hit:550,  critDmg:0.325}},
-        {ilvl:[101,110],name:"湮灭神戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:660,  critDmg:0.36}},
-        {ilvl:[111,120],name:"星界天戒", icon:"./assets/images/icons/slot-ring.png",base:{hit:780,  critDmg:0.38}}
+        {ilvl:[1,10],  name:"黄铜指环", icon:"./assets/images/equip/T1/jz.png",   base:{hit:10,   critDmg:0.02}},
+        {ilvl:[11,20], name:"白银戒环", icon:"./assets/images/equip/T2/jz.png",   base:{hit:30,   critDmg:0.05}},
+        {ilvl:[21,30], name:"黄金魔戒", icon:"./assets/images/equip/T3/jz.png",   base:{hit:60,   critDmg:0.08}},
+        {ilvl:[31,40], name:"岩纹秘戒", icon:"./assets/images/equip/T4/jz.png",   base:{hit:100,  critDmg:0.115}},
+        {ilvl:[41,50], name:"熔岩焰戒", icon:"./assets/images/equip/T5/jz.png",   base:{hit:150,  critDmg:0.15}},
+        {ilvl:[51,60], name:"符文法戒", icon:"./assets/images/equip/T6/jz.png",   base:{hit:210,  critDmg:0.185}},
+        {ilvl:[61,70], name:"幽魂灵戒", icon:"./assets/images/equip/T7/jz.png",   base:{hit:280,  critDmg:0.22}},
+        {ilvl:[71,80], name:"地狱魔戒", icon:"./assets/images/equip/T8/jz.png",   base:{hit:360,  critDmg:0.255}},
+        {ilvl:[81,90], name:"虚空龙戒", icon:"./assets/images/equip/T9/jz.png",   base:{hit:450,  critDmg:0.29}},
+        {ilvl:[91,100],name:"深渊圣指", icon:"./assets/images/equip/T10/jz.png",  base:{hit:550,  critDmg:0.325}},
+        {ilvl:[101,110],name:"湮灭神戒", icon:"./assets/images/equip/T11/jz.png", base:{hit:660,  critDmg:0.36}},
+        {ilvl:[111,120],name:"星界天戒", icon:"./assets/images/equip/T12/jz.png", base:{hit:780,  critDmg:0.38}}
     ],
     necklace: [
-        {ilvl:[1,10],  name:"骨质项链", icon:"./assets/images/equip/T1/xl.png",base:{critRate:0.01, critDmg:0.02}},
-        {ilvl:[11,20], name:"白银链坠", icon:"./assets/images/equip/T2/xl.png",base:{critRate:0.02, critDmg:0.05}},
-        {ilvl:[21,30], name:"黄金魔链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.03, critDmg:0.08}},
-        {ilvl:[31,40], name:"岩纹秘链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.04, critDmg:0.115}},
-        {ilvl:[41,50], name:"熔岩焰链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.05, critDmg:0.15}},
-        {ilvl:[51,60], name:"符文法链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.06, critDmg:0.185}},
-        {ilvl:[61,70], name:"幽魂灵链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.07, critDmg:0.22}},
-        {ilvl:[71,80], name:"地狱魔链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.08, critDmg:0.255}},
-        {ilvl:[81,90], name:"虚空龙链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.09, critDmg:0.29}},
-        {ilvl:[91,100],name:"深渊圣链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.10, critDmg:0.325}},
-        {ilvl:[101,110],name:"湮灭神链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.11, critDmg:0.36}},
-        {ilvl:[111,120],name:"星界天链", icon:"./assets/images/icons/slot-necklace.png",base:{critRate:0.12, critDmg:0.38}}
+        {ilvl:[1,10],  name:"骨质项链", icon:"./assets/images/equip/T1/xl.png",   base:{critRate:0.01, critDmg:0.02}},
+        {ilvl:[11,20], name:"白银链坠", icon:"./assets/images/equip/T2/xl.png",   base:{critRate:0.02, critDmg:0.05}},
+        {ilvl:[21,30], name:"黄金魔链", icon:"./assets/images/equip/T3/xl.png",   base:{critRate:0.03, critDmg:0.08}},
+        {ilvl:[31,40], name:"岩纹秘链", icon:"./assets/images/equip/T4/xl.png",   base:{critRate:0.04, critDmg:0.115}},
+        {ilvl:[41,50], name:"熔岩焰链", icon:"./assets/images/equip/T5/xl.png",   base:{critRate:0.05, critDmg:0.15}},
+        {ilvl:[51,60], name:"符文法链", icon:"./assets/images/equip/T6/xl.png",   base:{critRate:0.06, critDmg:0.185}},
+        {ilvl:[61,70], name:"幽魂灵链", icon:"./assets/images/equip/T7/xl.png",   base:{critRate:0.07, critDmg:0.22}},
+        {ilvl:[71,80], name:"地狱魔链", icon:"./assets/images/equip/T8/xl.png",   base:{critRate:0.08, critDmg:0.255}},
+        {ilvl:[81,90], name:"虚空龙链", icon:"./assets/images/equip/T9/xl.png",   base:{critRate:0.09, critDmg:0.29}},
+        {ilvl:[91,100],name:"深渊圣链", icon:"./assets/images/equip/T10/xl.png",  base:{critRate:0.10, critDmg:0.325}},
+        {ilvl:[101,110],name:"湮灭神链", icon:"./assets/images/equip/T11/xl.png", base:{critRate:0.11, critDmg:0.36}},
+        {ilvl:[111,120],name:"星界天链", icon:"./assets/images/equip/T12/xl.png", base:{critRate:0.12, critDmg:0.38}}
     ]
 };
 
@@ -721,6 +721,19 @@ window.calcEquipSellPrice = function(equip) {
     return Math.max(1, price);
 };
 
+// ===== 装备改造系统配置 =====
+window.REFORM_CONFIG = {
+    // 改造石阶次映射
+    stoneByStage: [
+        { minStage: 1,  maxStage: 3,  cfgId: 'reform_stone_small'},
+        { minStage: 4,  maxStage: 6,  cfgId: 'reform_stone_medium'},
+        { minStage: 7,  maxStage: 9,  cfgId: 'reform_stone_large'},
+        { minStage: 10, maxStage: 12, cfgId: 'reform_stone_complete'}
+    ],
+    // 每次改造消耗数量
+    costPerReform: 1
+};
+
 // ===== 装备强化系统配置 =====
 window.ENHANCE_CONFIG = {
     maxLevel: 10,  // 强化上限
@@ -743,10 +756,10 @@ window.ENHANCE_CONFIG = {
     needMaterialFromLevel: 6,  // 从+6开始需要材料
     
     soulShardByStage: [
-        { minStage: 1,  maxStage: 3,  cfgId: 'soul_shard_small',   name: '灵魂碎晶（小）' },
-        { minStage: 4,  maxStage: 6,  cfgId: 'soul_shard_medium',  name: '灵魂碎晶（中）' },
-        { minStage: 7,  maxStage: 9,  cfgId: 'soul_shard_large',   name: '灵魂碎晶（大）' },
-        { minStage: 10, maxStage: 12, cfgId: 'soul_shard_complete', name: '灵魂碎晶（完整）' }
+        { minStage: 1,  maxStage: 3,  cfgId: 'soul_shard_small'},
+        { minStage: 4,  maxStage: 6,  cfgId: 'soul_shard_medium'},
+        { minStage: 7,  maxStage: 9,  cfgId: 'soul_shard_large'},
+        { minStage: 10, maxStage: 12, cfgId: 'soul_shard_complete'}
     ],
 
     materialCost: {

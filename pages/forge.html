@@ -27,7 +27,7 @@
         <div class="forge-action-area">
             <div class="forge-action-row success-rate">
                 <span class="row-label">
-                    <span class="row-label-text">成功率</span>
+                    <span class="row-label-text">强化成功率</span>
                     <span class="row-label-colon">：</span>
                 </span>
                 <span class="row-value"><span id="forgeSuccessRate">100%</span></span>
@@ -46,16 +46,25 @@
         </div>
     </div>
 
-    <!-- 改造面板（不变） -->
-    <div class="forge-panel" id="forgePanelReform">
-        <div class="forge-coming-soon">
-            <div class="forge-coming-soon-inner">
-                <div class="coming-soon-icon">🔧</div>
-                <div class="coming-soon-text">功能开发中</div>
-                <div class="coming-soon-hint">敬请期待</div>
+        <!-- 改造面板 -->
+            <div class="forge-panel" id="forgePanelReform">
+                <!-- 左右布局主体 -->
+                <div class="reform-layout">
+                    <!-- 左侧：装备头部 + 随机词缀列表（可点击选择） -->
+                    <div class="reform-left" id="reformEquipDisplay">
+                        <!-- 由 JS 动态渲染 -->
+                    </div>
+                    <!-- 右侧：部位可改造词缀参考（仅展示） -->
+                    <div class="reform-right" id="reformAffixReference">
+                        <!-- 由 JS 动态渲染 -->
+                    </div>
+                </div>
+        
+                <!-- 底部操作区 -->
+                <div class="reform-bottom" id="reformActionArea">
+                    <!-- 由 JS 动态渲染：改造石消耗 + 改造按钮 -->
+                </div>
             </div>
-        </div>
-    </div>
 
     <!-- 打孔面板（不变） -->
     <div class="forge-panel" id="forgePanelSocket">

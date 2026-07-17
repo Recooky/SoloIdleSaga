@@ -724,7 +724,7 @@ function showDeathModal() {
     const countdownEl = document.getElementById('deathCountdown');
     if (!modal || !countdownEl) return;
 
-    let remaining = 5;
+    let remaining = 3;
     countdownEl.innerText = `${remaining}秒后自动复活`;
     modal.style.display = 'flex';      // ★ 全局 modal-overlay 使用 flex 居中
 

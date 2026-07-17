@@ -4,6 +4,19 @@ let forgeEquipSource = null;     // 'bag' 或 'wear'
 let forgeBagIndex = -1;         // 背包索引
 let forgeWearPos = null;        // 穿戴部位
 
+// ===== 改造相关变量 =====
+let reformSelectedAffixIndex = -1;   // 当前选中的词缀下标（-1表示未选）
+let lastForgeTab = 'enhance';  // 默认选中强化标签
+
+/**
+ * 格式化金币显示：>= 10000 显示为 X.XXW，否则显示原数字
+ */
+function formatGold(amount) {
+    if (amount >= 10000) {
+        return (amount / 10000).toFixed(1) + 'W';
+    }
+    return amount.toString();
+}
 // 在 forge.js 中实现的计算逻辑：
 function getEnhanceGoldCost(equip, targetLevel) {
     // targetLevel: 从当前等级升到 targetLevel 的金币（1-10）
@@ -12,16 +25,16 @@ function getEnhanceGoldCost(equip, targetLevel) {
     
     // 每一级的金币消耗系数（index 0 对应 +1，与 successRate 对齐）
     const levelCostMultipliers = [
-        5.0,    // +1: 1倍出售价
-        6.0,    // +2: 1.5倍
-        7.0,    // +3: 2.2倍
-        8.0,    // +4: 3倍
-        9.0,    // +5: 4倍
-        11.5,    // +6: 5.5倍
-        13.0,    // +7: 7倍
-        15.0,    // +8: 9倍
-        17.0,   // +9: 12倍
-        20.0    // +10: 16倍
+        1.0,    // +1: 1倍出售价
+        1.5,    // +2: 1.5倍
+        2.2,    // +3: 2.2倍
+        3.0,    // +4: 3倍
+        4.0,    // +5: 4倍
+        5.5,    // +6: 5.5倍
+        7.0,    // +7: 7倍
+        8.0,    // +8: 9倍
+        12.0,   // +9: 12倍
+        16.0    // +10: 16倍
     ];
     return Math.floor(basePrice * levelCostMultipliers[targetLevel - 1]);
 }
@@ -68,31 +81,64 @@ function formatForgeBonus(key, val) {
         return val.toFixed(1);
     }
 }
-// 打开打造模块
+
+// 打开打造模块（保留Tab位置，只刷新数据）
 function openForgeModule(equip, bagIndex, wearPos) {
     forgeCurrentEquip = equip;
     forgeBagIndex = bagIndex;
     forgeWearPos = wearPos;
     forgeEquipSource = wearPos !== null ? 'wear' : 'bag';
     
-    // 切换到 forge 面板
+    // 切换到 forge 面板（不改变Tab内部状态）
     const forgePanel = document.getElementById('tab-forge');
     if (forgePanel) {
-        // 隐藏其他面板，显示 forge 面板
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         forgePanel.classList.add('active');
         
-        // 高亮对应的底部导航（如果有）
+        // 高亮底部导航（可选，保持统一）
         document.querySelectorAll('.nav-module').forEach(b => b.classList.remove('active'));
-        // 可以添加一个临时的 nav-module 或者复用角色按钮
-        
+        const charBtn = document.querySelector('[data-module="character"]');
+        if (charBtn) charBtn.classList.add('active');
+    }
+    
+    // ★ 根据上次选中的 tab 刷新对应面板
+    const target = lastForgeTab || 'enhance';
+    
+    // 激活对应的 tab 按钮和面板
+    const tabsContainer = document.getElementById('forgeTabs');
+    if (tabsContainer) {
+        tabsContainer.querySelectorAll('.forge-tab').forEach(t => t.classList.remove('active'));
+        const targetTab = tabsContainer.querySelector(`[data-forge-tab="${target}"]`);
+        if (targetTab) targetTab.classList.add('active');
+    }
+    document.querySelectorAll('.forge-panel').forEach(p => p.classList.remove('active'));
+    const targetPanel = document.getElementById('forgePanel' + 
+        target.charAt(0).toUpperCase() + target.slice(1));
+    if (targetPanel) targetPanel.classList.add('active');
+    
+    // 渲染对应面板
+    if (target === 'reform') {
+        renderReformPanel();
+    } else {
         renderForgeModule();
     }
 }
 
-// 渲染打造模块
+// 渲染打造模块（强化页）
 function renderForgeModule() {
-    if (!forgeCurrentEquip) return;
+    // 从存档重新获取当前装备（确保数据最新）
+    let equip;
+    const save = getSaveData();
+    if (forgeEquipSource === 'bag' && forgeBagIndex >= 0) {
+        equip = save.bag[forgeBagIndex];
+    } else if (forgeEquipSource === 'wear' && forgeWearPos) {
+        equip = save.equipWear[forgeWearPos];
+    }
+    if (!equip) {
+        forgeCurrentEquip = null;
+        return;
+    }
+    forgeCurrentEquip = equip;
     
     // 渲染当前装备属性
     renderForgeEquipStats();
@@ -104,38 +150,50 @@ function renderForgeModule() {
 function renderForgeEquipStats() {
     const equip = forgeCurrentEquip;
     if (!equip) return;
-    
+
     const displayEl = document.getElementById('forgeEquipDisplay');
     if (!displayEl) return;
-    
-    // 只渲染一个卡片，“当前装备”作为 badgeText
-    let html = buildForgeCardHtml(equip, '当前装备');
-    displayEl.innerHTML = `<div class="equip-tip-box" style="display:flex;flex-direction:column;">${html}</div>`;
-}
 
-// 构建单张卡片 HTML
-function buildForgeCardHtml(equip, badgeText) {
-    const rClass = getRarityClass(equip.rarityName);
-    const enhanceBadge = equip.enhanceLevel ? `<span class="enhance-level">+${equip.enhanceLevel}</span>` : '';
-    const badgeHtml = badgeText ? `<span class="forge-preview-badge">${badgeText}</span>` : '';
-    
-    // 头部 — "当前装备"标签移到装备等级后面
-    let html = `
-        <div class="equip-header">
-            <div class="equip-header-top">
-                <div class="equip-header-left">
-                    <span class="equip-name ${rClass}">${equip.name}${enhanceBadge}</span>
-                </div>
+    // ★ 获取装备相关信息
+    const iconUrl = getEquipIcon(equip);
+    const dc = getRarityDisplayColor(equip.rarityName);
+    const rarityColor = dc.border;
+    const enhanceBadge = equip.enhanceLevel;
+
+    // ★ 外部头部：图标 + 名称 + 强化等级
+    const headerHtml = `
+        <div class="forge-equip-icon-area">
+            <div class="forge-equip-icon-wrap" style="
+                background-color: ${dc.bg};
+                border: 2px solid ${dc.border};
+            ">
+                <img src="${iconUrl}" alt="${equip.name}">
             </div>
-            <div class="equip-header-bottom">
-                <div class="equip-level">装等：${equip.ilvl} ${badgeHtml}</div>
+            <div class="forge-equip-name-line" style="color: ${rarityColor};">
+                ${equip.name} +${enhanceBadge}
             </div>
         </div>
-        <div class="equip-divider"></div>
     `;
-    
-    // ========== 基础属性（只显示原始值） ==========
-    html += '<div class="base-attr-title">【基础属性】</div>';
+
+    // ★ 内部盒子（属性部分）
+    const cardHtml = buildForgeCardHtml(equip);
+
+    displayEl.innerHTML = headerHtml + `<div class="equip-forge-box" style="display:flex;flex-direction:column;">${cardHtml}</div>`;
+}
+
+// 构建单张卡片 HTML（打造界面强化模块使用）
+function buildForgeCardHtml(equip) {
+    // 计算下一级强化预览
+    const currentLevel = equip.enhanceLevel || 0;
+    const nextLevel = currentLevel + 1;
+    let nextBoost = null;
+    if (nextLevel <= ENHANCE_CONFIG.maxLevel) {
+        nextBoost = calculateEnhanceBoostForLevel(equip, nextLevel, currentLevel);
+    }
+
+    let html = '<div class="base-attr-title">【基础属性】</div>';
+
+    // ========== 基础属性 ==========
     if (equip.baseAttr) {
         const template = getEquipBaseTemplate(equip.ilvl, equip.position, equip.subType);
         let baseKeys;
@@ -154,84 +212,60 @@ function buildForgeCardHtml(equip, badgeText) {
         } else {
             baseKeys = Object.keys(equip.baseAttr);
         }
-        
+
         baseKeys.filter(key => equip.baseAttr[key] !== undefined).forEach(key => {
-            const val = equip.baseAttr[key];  // 只取原始基础值
+            const val = equip.baseAttr[key];
             const cfg = ATTR_DISPLAY_CONFIG[key];
             const label = cfg ? cfg.label : key;
             const valStr = cfg ? cfg.format(val) : val.toFixed(1);
-            
             html += `<div class="forge-equip">
                 <span class="forge-equip-name">${label}</span>
                 <span class="forge-equip-value">+ ${valStr}</span>
             </div>`;
         });
     }
-    
-    // ========== 强化增益（绿色） ==========
-    if (equip.enhanceBonus && Object.keys(equip.enhanceBonus).length > 0) {
-        html += '<div class="equip-divider"></div>';
-        html += '<div class="base-attr-title" style="color:#22c55e;">【强化增益】</div>';
-        Object.entries(equip.enhanceBonus).forEach(([key, bonus]) => {
-            const cfg = ATTR_DISPLAY_CONFIG[key];
-            if (!cfg) return;
-            const label = cfg.label;
-            const valStr = formatForgeBonus(key, bonus);
-            html += `<div class="forge-equip forge-bonus-item">
-                <span class="forge-equip-name">${label}</span>
-                <span class="forge-equip-value">+ ${valStr}</span>
-            </div>`;
-        });
-    }
-    
-    // ========== 随机词条 ==========
-    if (equip.affixes && equip.affixes.length > 0) {
-        html += '<div class="equip-divider"></div>';
-        html += '<div class="affix-title">【随机词条】</div>';
-        
-        const typeOrderMap = {};
-        if (window.ALL_AFFIX) {
-            window.ALL_AFFIX.forEach((def, idx) => typeOrderMap[def.type] = idx);
-        }
-        const sortedAffixes = [...equip.affixes].sort((a, b) => {
-            const oa = typeOrderMap[a.type] ?? Infinity;
-            const ob = typeOrderMap[b.type] ?? Infinity;
-            return oa - ob;
-        });
-        
-        sortedAffixes.forEach(aff => {
-            const tier = aff.tier || 1;
-            const tClass = getTierClass(tier);
-            const valStr = aff.value > 1
-                ? formatAttrVal(aff.value)
-                : formatAttrVal(aff.value * 100) + '%';
-            html += `<div class="forge-equip">
-                <span class="forge-equip-name">
-                    <span class="${tClass}">T${tier}</span>
-                    <span class="forge-equip-label">${aff.name}</span>
-                </span>
-                <span class="forge-equip-value">+ ${valStr}</span>
-            </div>`;
-        });
-    }
-    
-    return html;
-}
 
-// 模拟强化后的装备对象（用于预览）
-function simulateEnhancedEquip(equip, targetLevel) {
-    const newBonus = calculateEnhanceBoostForLevel(equip, targetLevel, targetLevel - 1);
-    const mergedBonus = {};
-    Object.entries(equip.enhanceBonus || {}).forEach(([k, v]) => mergedBonus[k] = v);
-    Object.entries(newBonus).forEach(([k, v]) => {
-        mergedBonus[k] = (mergedBonus[k] || 0) + v;
+    // ========== 强化增益（绿色） ==========
+    html += '<div class="equip-divider"></div>';
+    html += '<div class="base-attr-title">【当前增益+强化预览】</div>';
+
+    // 决定要显示的属性列表：
+    // 如果有 enhanceBonus，使用其键；否则使用 baseAttr 的键（代表所有可强化属性）
+    let bonusKeys;
+    if (equip.enhanceBonus && Object.keys(equip.enhanceBonus).length > 0) {
+        bonusKeys = Object.keys(equip.enhanceBonus);
+    } else {
+        // 强化等级为0时，从基础属性获取可强化的属性键
+        bonusKeys = equip.baseAttr ? Object.keys(equip.baseAttr).filter(key => {
+            // 过滤掉可能不需要显示为增益的属性（如果有需要排除的），目前保留全部
+            return true;
+        }) : [];
+    }
+
+    bonusKeys.forEach(key => {
+        const cfg = ATTR_DISPLAY_CONFIG[key];
+        if (!cfg) return;
+        const label = cfg.label;
+        
+        // 当前增益值：如果有 enhanceBonus 则取用，否则为 0
+        const bonus = equip.enhanceBonus?.[key] || 0;
+        const valStr = formatForgeBonus(key, bonus);
+
+        // ★ 下一级预览
+        let previewHtml = '';
+        if (nextBoost && nextBoost[key] !== undefined) {
+            const nextAdd = nextBoost[key];
+            const nextValStr = formatForgeBonus(key, nextAdd);
+            previewHtml = `<span class="forge-bonus-preview"> (+${nextValStr})</span>`;
+        }
+
+        html += `<div class="forge-equip forge-bonus-item">
+            <span class="forge-equip-name">${label}</span>
+            <span class="forge-equip-value">+ ${valStr}</span>
+            ${previewHtml}
+        </div>`;
     });
-    
-    return {
-        ...equip,
-        enhanceLevel: targetLevel,
-        enhanceBonus: mergedBonus
-    };
+    return html;
 }
 
 // 计算强化属性增益
@@ -294,8 +328,8 @@ function renderForgeEnhanceInfo() {
     const save = getSaveData();
     const playerGold = save.gold || 0;
     
-    goldCostEl.textContent = goldCost;
-    playerGoldEl.textContent = playerGold;
+    goldCostEl.textContent = formatGold(goldCost);
+    playerGoldEl.textContent = formatGold(playerGold);
     
     // 颜色提示是否足够
     goldCostEl.style.color = playerGold >= goldCost ? '#22c55e' : '#ef4444';
@@ -312,16 +346,19 @@ function renderForgeEnhanceInfo() {
             const hasEnough = owned >= cost;
             const numColor = hasEnough ? '#22c55e' : '#ef4444';
 
+            // ★ 从 OTHER_ITEM_CONFIG 获取显示名称
+            const shardName = (window.OTHER_ITEM_CONFIG?.[shardCfg.cfgId]?.name) || shardCfg.cfgId;
+
             materialArea.innerHTML = `
                 <div class="forge-action-row material-row">
                     <span class="row-label">
-                        <span class="row-label-text">${shardCfg.name}</span>
+                        <span class="row-label-text">${shardName}</span>
                         <span class="row-label-colon">：</span>
                     </span>
                     <span class="row-value">
-                        <span class="material-num" style="color:${numColor};font-weight:600;">${owned}</span>
+                        <span class="material-num" style="color:${numColor};font-weight:600;">${cost}</span>
                         <span class="material-slash"> / </span>
-                        <span class="material-denom">${cost}</span>
+                        <span class="material-denom">${owned}</span>
                     </span>
                 </div>
             `;
@@ -352,17 +389,6 @@ function renderForgeEnhanceInfo() {
     }
 }
 
-// 获取强化金币消耗
-function getEnhanceGoldCost(equip, targetLevel) {
-    const basePrice = calcEquipSellPrice(equip);
-    const multipliers = [
-        1.0, 1.5, 2.2, 3.0, 4.0,
-        5.5, 7.0, 9.0, 12.0, 16.0
-    ];
-    return Math.floor(basePrice * multipliers[targetLevel - 1]);
-}
-
-// 执行强化
 // 执行强化
 function doEnhance() {
     const save = getSaveData();
@@ -413,14 +439,16 @@ function doEnhance() {
         if (shardCfg) {
             const cost = getMaterialCost(targetLevel);
             const owned = getPlayerItemCount(shardCfg.cfgId);
+            // ★ 将 shardName 提前定义，使其在整个 shardCfg 块内可用
+            const shardName = (window.OTHER_ITEM_CONFIG?.[shardCfg.cfgId]?.name) || shardCfg.cfgId;
             if (owned < cost) {
-                showToast(`材料不足：需要 ${shardCfg.name} x${cost}`);
+                showToast(`材料不足：需要 ${shardName} x${cost}`);
                 return;
             }
             // 扣除材料
             if (!save.otherItems) save.otherItems = {};
             save.otherItems[shardCfg.cfgId] = (save.otherItems[shardCfg.cfgId] || 0) - cost;
-            console.log(`扣除材料: ${shardCfg.name} x${cost}, 剩余: ${save.otherItems[shardCfg.cfgId]}`);
+            console.log(`扣除材料: ${shardName} x${cost}, 剩余: ${save.otherItems[shardCfg.cfgId]}`);
         }
     }
 
@@ -463,11 +491,375 @@ function doEnhance() {
     refreshCharacterPanel();
 }
 
+// ===================== 改造系统 =====================
+
+// 从存档重新获取当前装备对象（确保数据最新）
+function getReformEquipFromSave() {
+    const save = getSaveData();
+    if (forgeEquipSource === 'bag' && forgeBagIndex >= 0) {
+        return save.bag[forgeBagIndex];
+    } else if (forgeEquipSource === 'wear' && forgeWearPos) {
+        return save.equipWear[forgeWearPos];
+    }
+    return null;
+}
+
+// 根据阶数获取对应的改造石配置
+function getReformStoneByStage(stage) {
+    const stoneMap = REFORM_CONFIG.stoneByStage;
+    for (const entry of stoneMap) {
+        if (stage >= entry.minStage && stage <= entry.maxStage) {
+            return entry;
+        }
+    }
+    return null;
+}
+
+// 渲染改造面板（每次从存档重新获取装备）
+function renderReformPanel() {
+    const equip = getReformEquipFromSave();
+    if (!equip) {
+        document.getElementById('reformEquipDisplay').innerHTML = '<div style="color:#4a2c11;padding:20px;">装备数据异常</div>';
+        document.getElementById('reformActionArea').innerHTML = '';
+        document.getElementById('reformAffixReference').innerHTML = '';
+        return;
+    }
+    forgeCurrentEquip = equip;
+    renderReformLeft();
+    renderReformAffixReference();
+    renderReformBottom();
+}
+
+// 渲染左侧：装备头部 + 随机词缀选择
+function renderReformLeft() {
+    const equip = forgeCurrentEquip;
+    const el = document.getElementById('reformEquipDisplay');
+    if (!el || !equip) return;
+
+    const iconUrl = getEquipIcon(equip);
+    const dc = getRarityDisplayColor(equip.rarityName);
+    const rarityColor = dc.border;
+    const enhanceBadge = equip.enhanceLevel || 0;
+    const isReformed = equip.reformReformed === true;
+
+    // 头部：图标 + 名称 + 装等
+    let html = `
+        <div class="reform-equip-header">
+            <div class="reform-equip-icon" style="background-color:${dc.bg};border:2px solid ${dc.border};">
+                <img src="${iconUrl}" alt="${equip.name}">
+            </div>
+            <div class="reform-equip-meta">
+                <div class="reform-equip-name" style="color:${rarityColor};">${equip.name} +${enhanceBadge}</div>
+                <div class="reform-equip-level">装备等级 ${equip.ilvl}</div>
+            </div>
+        </div>
+        <div class="reform-affix-section-title">请选择需要改造的词条</div>
+    `;
+
+    // 词缀列表（只显示随机词缀，不显示基础属性）
+    if (equip.affixes && equip.affixes.length > 0) {
+        const affixesToRender = equip.affixes;
+
+        affixesToRender.forEach((affix, displayIdx) => {
+            const originalIdx = equip.affixes.indexOf(affix);
+            const cfg = ATTR_DISPLAY_CONFIG[affix.type];
+            let valStr = '';
+            if (cfg) {
+                valStr = cfg.format(affix.value);
+            } else {
+                valStr = affix.value !== undefined ? affix.value.toFixed(1) : '';
+            }
+            const tierColorClass = 'tier-' + affix.tier;
+            const isSelected = (equip.reformLockedAffixIndex === originalIdx);
+
+            let canClick = false;
+            if (isReformed) {
+                canClick = (originalIdx === equip.reformLockedAffixIndex);
+            } else {
+                canClick = true;
+            }
+            const isDisabled = !canClick;
+            const disabledStyle = isDisabled ? 'style="pointer-events:none;overflow:visible;white-space:normal;"' : '';
+            const isClickable = canClick;
+
+            html += `<div class="reform-affix-row ${isSelected ? 'reform-affix-selected' : ''} ${isDisabled ? 'reform-affix-disabled' : ''} ${isClickable ? 'reform-affix-clickable' : ''}" 
+                        ${disabledStyle}
+                        data-affix-index="${originalIdx}" onclick="${isDisabled ? '' : 'onSelectReformAffix(' + originalIdx + ')'}">
+                        <div class="reform-affix-info">
+                            <span class="affix-tier ${tierColorClass}">T${affix.tier}</span>
+                            <span class="affix-name">${affix.name}</span>
+                        </div>
+                        <span class="affix-value">+ ${valStr}</span>
+                    </div>`;
+        });
+    } else {
+        html += '<div class="reform-empty">该装备没有随机词缀</div>';
+    }
+
+    el.innerHTML = html;
+}
+
+// 选中某条词缀为改造位
+function onSelectReformAffix(affixIndex) {
+    const equip = forgeCurrentEquip;
+    if (!equip || !equip.affixes || affixIndex < 0 || affixIndex >= equip.affixes.length) {
+        showToast('无效的词缀索引');
+        return;
+    }
+    // ★ 已改造装备：只允许选择被锁定的那条词缀（允许反复改造）
+    if (equip.reformReformed === true && affixIndex !== equip.reformLockedAffixIndex) {
+            showToast('只能改造已锁定的词条');
+            return;
+        }
+    // 保存到装备对象和存档
+    equip.reformLockedAffixIndex = affixIndex;
+    const save = getSaveData();
+    let targetEquip;
+    if (forgeEquipSource === 'bag' && forgeBagIndex >= 0) {
+        targetEquip = save.bag[forgeBagIndex];
+    } else if (forgeEquipSource === 'wear' && forgeWearPos) {
+        targetEquip = save.equipWear[forgeWearPos];
+    }
+    if (targetEquip) {
+        targetEquip.reformLockedAffixIndex = affixIndex;
+        setSaveData(save);
+        forgeCurrentEquip = targetEquip;
+    }
+    // 重新渲染
+    renderReformPanel();
+}
+
+
+// 渲染底部操作区（改造石消耗 + 随机改造按钮）
+function renderReformActionArea() {
+    const equip = forgeCurrentEquip;
+    const area = document.getElementById('reformActionArea');
+    if (!area) return;
+
+    if (!equip || !equip.affixes || equip.affixes.length === 0) {
+        area.innerHTML = '<div class="forge-action-area" style="text-align:center;color:#4a2c11;">该装备没有可改造的词缀</div>';
+        return;
+    }
+
+    // ★ 已改造装备：如果有锁定词缀，仍然允许改造（可反复改造）
+    if (equip.reformReformed === true) {
+        const lockedIdx = equip.reformLockedAffixIndex;
+        if (lockedIdx === undefined || lockedIdx < 0) {
+            area.innerHTML = '<div class="forge-action-area" style="text-align:center;color:#4a2c11;">该装备已改造，无法再次改造</div>';
+            return;
+        }
+        // 有锁定词缀，继续执行下面的逻辑，显示改造按钮
+    }
+
+    const lockedIdx = equip.reformLockedAffixIndex;
+    if (lockedIdx === undefined || lockedIdx < 0) {
+        area.innerHTML = '<div class="forge-action-area" style="text-align:center;color:#4a2c11;">请先选择改造位</div>';
+        return;
+    }
+
+    // 改造石信息
+    const stage = getEquipStage(equip);
+    const stoneCfg = getReformStoneByStage(stage);
+    const stoneInfo = stoneCfg ? (window.OTHER_ITEM_CONFIG?.[stoneCfg.cfgId]) : null;
+    const stoneName = stoneInfo?.name || '改造石';
+    const cost = REFORM_CONFIG.costPerReform;
+    const owned = stoneCfg ? getPlayerItemCount(stoneCfg.cfgId) : 0;
+    const hasEnough = owned >= cost;
+    const stoneColor = hasEnough ? '#22c55e' : '#ef4444';
+
+    let html = '<div class="forge-action-area">';
+    html += `<div class="forge-action-row material-row">
+                <span class="row-label">
+                    <span class="row-label-text">${stoneName}</span>
+                    <span class="row-label-colon">：</span>
+                </span>
+                <span class="row-value">
+                    <span class="material-num" style="color:${stoneColor};font-weight:600;">${cost}</span>
+                    <span class="material-slash"> / </span>
+                    <span class="material-denom">${owned}</span>
+                </span>
+            </div>`;
+
+    const disabled = !hasEnough ? 'disabled' : '';
+    const btnText = !hasEnough ? `${stoneName}不足` : '随机改造';
+    html += `<button class="forge-enhance-btn" id="reformDoBtn" ${disabled}>
+                ${btnText}
+            </button>`;
+
+    html += '</div>';
+    area.innerHTML = html;
+
+    // 绑定改造按钮事件
+    const reformBtn = document.getElementById('reformDoBtn');
+    if (reformBtn && hasEnough) {
+        reformBtn.addEventListener('click', doReform);
+    }
+}
+
+// 执行改造（随机选择目标词缀类型）
+function doReform() {
+    const save = getSaveData();
+    let equip;
+
+    if (forgeEquipSource === 'bag' && forgeBagIndex >= 0) {
+        equip = save.bag[forgeBagIndex];
+    } else if (forgeEquipSource === 'wear' && forgeWearPos) {
+        equip = save.equipWear[forgeWearPos];
+    } else {
+        showToast('无法获取装备数据');
+        return;
+    }
+    if (!equip) {
+        showToast('装备不存在');
+        return;
+    }
+
+    forgeCurrentEquip = equip;
+
+    const lockedIdx = equip.reformLockedAffixIndex;
+    if (lockedIdx === undefined || lockedIdx < 0 || !equip.affixes || !equip.affixes[lockedIdx]) {
+        showToast('请先选择需要改造的词条');
+        return;
+    }
+
+    // 检查改造石
+    const stage = getEquipStage(equip);
+    const stoneCfg = getReformStoneByStage(stage);
+    if (!stoneCfg) {
+        showToast('无法确定改造石类型');
+        return;
+    }
+
+    const cost = REFORM_CONFIG.costPerReform;
+    const owned = getPlayerItemCount(stoneCfg.cfgId);
+    if (owned < cost) {
+        const stoneName = (window.OTHER_ITEM_CONFIG?.[stoneCfg.cfgId]?.name) || stoneCfg.cfgId;
+        showToast(`${stoneName}不足，需要 ${cost} 个`);
+        return;
+    }
+
+    // 随机选择目标词缀类型
+    const position = equip.position;
+    const { lib } = getAffixLibByPosition(position);
+
+    // 排除其他词缀类型（当前改造位类型保留在池中）
+    const existingTypes = equip.affixes
+        .filter((_, idx) => idx !== lockedIdx)
+        .map(a => a.type);
+
+    const maxTier = Math.min(12, Math.ceil(equip.ilvl / 10));
+
+    const availableTargets = lib.filter(affixDef => {
+        const minTier = affixDef.minTier || 1;
+        return !existingTypes.includes(affixDef.type) && maxTier >= minTier;
+    });
+
+    if (availableTargets.length === 0) {
+        showToast('没有可用的目标词缀');
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * availableTargets.length);
+    const targetDef = availableTargets[randomIndex];
+    const reformTargetAffixType = targetDef.type;
+    const reformTargetAffixName = targetDef.name;
+
+    // 扣除改造石
+    if (!save.otherItems) save.otherItems = {};
+    save.otherItems[stoneCfg.cfgId] = (save.otherItems[stoneCfg.cfgId] || 0) - cost;
+
+    // 生成新词缀
+    const ilvl = equip.ilvl;
+    const tier = Math.min(12, Math.ceil(ilvl / 10)); // 或使用 window.randomAffixTier(ilvl)
+    const { getValueRange } = getAffixLibByPosition(position);
+    const [minVal, maxVal] = getValueRange(reformTargetAffixType, tier);
+    const randomVal = minVal + Math.random() * (maxVal - minVal);
+    const decimal = targetDef.decimal !== undefined ? targetDef.decimal : 0;
+    const newValue = parseFloat(randomVal.toFixed(decimal));
+
+    // 替换词缀
+    equip.affixes[lockedIdx] = {
+        name: reformTargetAffixName,
+        type: reformTargetAffixType,
+        value: newValue,
+        tier: tier
+    };
+
+    // 重置目标选择（不再使用全局变量，只清空本地状态）
+    // 装备标记为已改造
+    equip.reformReformed = true;
+
+    setSaveData(save);
+    renderReformPanel();
+    refreshCharacterPanel();
+    showToast(`改造成功！将 ${equip.affixes[lockedIdx].name} 替换为 ${reformTargetAffixName} T${tier}`);
+}
+
+
+// 渲染右侧可用词缀池（只读展示）
+function renderReformAffixReference() {
+    const refEl = document.getElementById('reformAffixReference');
+    if (!refEl) return;
+    const equip = forgeCurrentEquip;
+    if (!equip || !equip.affixes || equip.affixes.length === 0) {
+        refEl.innerHTML = '<div style="padding:12px;color:#4a2c11;">请先选择装备</div>';
+        return;
+    }
+
+    const lockedIdx = equip.reformLockedAffixIndex;
+    // 已改造但没有锁定索引 → 提示（异常情况）
+    if (equip.reformReformed === true && (lockedIdx === undefined || lockedIdx < 0)) {
+        refEl.innerHTML = '<div style="padding:12px;color:#4a2c11;">该装备已改造，无法再次改造</div>';
+        return;
+    }
+    if (lockedIdx === undefined || lockedIdx < 0) {
+        refEl.innerHTML = '<div style="padding:12px;color:#4a2c11;">请点击左侧词缀选择改造位</div>';
+        return;
+    }
+
+    const position = equip.position;
+    const { lib } = getAffixLibByPosition(position);
+
+    // 排除其他词缀类型（当前改造位类型允许出现在列表中）
+    const existingTypes = equip.affixes
+        .filter((_, idx) => idx !== lockedIdx)
+        .map(a => a.type);
+
+    const maxTier = Math.min(12, Math.ceil(equip.ilvl / 10));
+
+    const availableAffixes = lib.filter(affixDef => {
+        const minTier = affixDef.minTier || 1;
+        return !existingTypes.includes(affixDef.type) && maxTier >= minTier;
+    });
+
+    const sorted = [...availableAffixes].sort((a, b) => (a.minTier || 1) - (b.minTier || 1));
+
+    let html = '<div class="reform-right-title">可改造为目标词缀：</div>';
+    html += '<div class="reform-target-list readonly">';
+
+    sorted.forEach(affixDef => {
+        const minTier = affixDef.minTier || 1;
+        const tierRange = minTier === maxTier ? `T${minTier}` : `T${minTier}~T${maxTier}`;
+
+        html += `<div class="reform-target-item">
+                    <span class="reform-target-name">${affixDef.name}</span>
+                    <span class="reform-target-tier">${tierRange}</span>
+                </div>`;
+    });
+
+    html += '</div>';
+    refEl.innerHTML = html;
+}
+function renderReformBottom() {
+    renderReformActionArea();
+}
+// ===================== 结束改造系统 =====================
+
 // 初始化打造模块
 function initForgeModule() {
     if (forgeInitialized) return;  // 只绑定一次
     forgeInitialized = true;
-    // Tab切换
+        // Tab切换
     const tabsContainer = document.getElementById('forgeTabs');
     if (tabsContainer) {
         tabsContainer.addEventListener('click', function(e) {
@@ -478,10 +870,18 @@ function initForgeModule() {
             tab.classList.add('active');
             
             const target = tab.dataset.forgeTab;
+            lastForgeTab = target; 
             document.querySelectorAll('.forge-panel').forEach(p => p.classList.remove('active'));
             const targetPanel = document.getElementById('forgePanel' + 
                 target.charAt(0).toUpperCase() + target.slice(1));
             if (targetPanel) targetPanel.classList.add('active');
+            
+            // 改造Tab：渲染改造面板
+            if (target === 'reform' && forgeCurrentEquip) {
+                renderReformPanel();
+            } else if (target === 'enhance' && forgeCurrentEquip) {
+                renderForgeModule();
+            }
         });
     }
     

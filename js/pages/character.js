@@ -386,8 +386,6 @@ function renderBagList() {
  * @param {Object} save - 存档数据
  * @param {HTMLElement} wrap - 背包网格容器
  */
-// js\pages\character.js
-
 function renderOtherItemsList(save, wrap) {
     const otherMap = save.otherItems || {};
     const displayList = [];
@@ -414,24 +412,37 @@ function renderOtherItemsList(save, wrap) {
     const configOrder = Object.keys(window.OTHER_ITEM_CONFIG);
     displayList.sort((a, b) => configOrder.indexOf(a.cfgId) - configOrder.indexOf(b.cfgId));
 
-    // ★ 辅助函数：根据 rarity 索引获取颜色
-    function getRarityColor(rarityIdx) {
-        if (rarityIdx === undefined || rarityIdx === null) return '#ffffff'; // 默认白色
+    // ★ 辅助：根据 rarity 索引获取边框色和背景色
+    function getOtherItemColors(rarityIdx) {
+        const defaultColor = '#d4a574';
+        const defaultBg = '#f5e6c8';
+        if (rarityIdx === undefined || rarityIdx === null) {
+            return { border: defaultColor, bg: defaultBg };
+        }
         const rarityConfig = window.MONSTER_RARITY && window.MONSTER_RARITY[rarityIdx];
-        return rarityConfig ? rarityConfig.color : '#ffffff';
+        const borderColor = rarityConfig ? rarityConfig.color : defaultColor;
+        // 背景色：取边框色 + 低透明度（约 20%）
+        const bgColor = borderColor + '33';
+        return { border: borderColor, bg: bgColor };
     }
 
     const MAX_SLOTS = 30;
 
-    let html = displayList.map((item, idx) => {
+    let html = displayList.map((item) => {
         const config = window.OTHER_ITEM_CONFIG[item.cfgId];
-        const color = getRarityColor(config.rarity);
-        const displayName = item.stackCount > 1 
-            ? `${config.name} x ${item.stackCount}`
-            : config.name;
-        return `<div class="bag-item other-item" data-cfgid="${item.cfgId}" data-stackcount="${item.stackCount}" data-total="${item.totalCount}">
-            <span style="color: ${color};">${displayName}</span>
-        </div>`;
+        const colors = getOtherItemColors(config.rarity);
+        const iconUrl = config.icon || './assets/images/icons/slot-weapon.png'; // 备选默认图标
+
+        // 数量徽章（复用强化等级徽章样式）
+        const stackBadge = item.stackCount > 1
+            ? `<span class="enhance-badge-hover">x${item.stackCount}</span>`
+            : '';
+
+        return `<div class="bag-item other-item" data-cfgid="${item.cfgId}" data-stackcount="${item.stackCount}" data-total="${item.totalCount}"
+                    style="position:relative;background-color:${colors.bg};border:2px solid ${colors.border};">
+                <img src="${iconUrl}" alt="${config.name}" style="width:100%;height:100%;object-fit:contain;">
+                ${stackBadge}
+            </div>`;
     }).join('');
 
     // 补充空槽位
@@ -796,7 +807,7 @@ function showEquipTip(equip, wearPos, bagIndex) {
                     </div>
                 </div>
                 <div class="equip-header-bottom">
-                    <div class="equip-level">装等：${eq.ilvl}</div>
+                    <div class="equip-level">装备等级：${eq.ilvl}</div>
                 </div>
             </div>
 
@@ -1413,7 +1424,7 @@ window.checkAutoSell = function(equip) {
     if (config.affixCount > 0 && equip.affixes) {
         const highTierCount = equip.affixes.filter(aff => aff.tier >= config.affixTierMin).length;
         // 如果高Tier词缀数量小于配置要求，表示条件不满足，不自动出售
-        if (highTierCount < config.affixCount) return false;
+        if (highTierCount >= config.affixCount) return false;
     }
     
     return true;
