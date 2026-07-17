@@ -1,7 +1,8 @@
 // sw.js - 全量预缓存方案（修复 GitHub Pages 路径问题）
 // ★ 自动获取当前 scope 路径（兼容 GitHub Pages 子目录）
-const SCOPE_PATH = self.location.pathname.replace(/\/$/, '') + '/'; // e.g. "/repo-name/"
-const MANIFEST_URL = SCOPE_PATH + 'assets/images/manifest.json';
+const urlParams = new URLSearchParams(self.location.search);
+const BASE_PATH = urlParams.get('base') || '/';
+const MANIFEST_URL = BASE_PATH + 'assets/images/manifest.json';
 
 let expectedCacheName = '';
 
@@ -26,7 +27,7 @@ self.addEventListener('install', event => {
         await Promise.allSettled(
           batch.map(url => {
             // ★ 将 manifest 中的 /assets/images/... 转为带仓库名的绝对路径
-            const fullUrl = SCOPE_PATH.replace(/\/$/, '') + url;
+            const fullUrl = BASE_PATH.replace(/\/$/, '') + url;
             return cache.add(fullUrl).catch(err => {
               console.warn('预缓存失败:', fullUrl, err.message);
             });
