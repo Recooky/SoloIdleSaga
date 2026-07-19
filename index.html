@@ -202,11 +202,16 @@
                 <span id="editLastSaveTime" style="color:#94a3b8;font-size:14px;"></span>
             </div>
             <div class="form-item" style="border-top:1px solid #334155;padding-top:20px;margin-top:20px;">
-                <button id="resetSaveBtn" class="tip-btn btn-danger"
-                    style="background:#dc2626;color:#fff;padding:10px 24px;border:none;border-radius:8px;cursor:pointer;width:100%;">🗑️
-                    重置存档</button>
-                <p style="color:#64748b;font-size:12px;margin-top:8px;text-align:center;">重置后本地和云端数据全部清空，不可恢复</p>
-            </div>
+              <!-- ★ 新增：上传存档按钮 -->
+              <button id="uploadSaveBtn" class="tip-btn btn-wear"
+                  style="background:#2563eb;color:#fff;padding:10px 24px;border:none;border-radius:8px;cursor:pointer;width:100%;margin-bottom:12px;">
+                  ☁️ 上传存档
+              </button>
+              <button id="resetSaveBtn" class="tip-btn btn-danger"
+                  style="background:#dc2626;color:#fff;padding:10px 24px;border:none;border-radius:8px;cursor:pointer;width:100%;">🗑️
+                  重置存档</button>
+              <p style="color:#64748b;font-size:12px;margin-top:8px;text-align:center;">重置后本地和云端数据全部清空，不可恢复</p>
+          </div>
             <div class="tip-btn-group" style="margin-top:20px;">
                 <button id="saveNicknameBtn" class="tip-btn btn-wear">保存昵称</button>
                 <button id="closeEditModal" class="tip-btn btn-close">关闭</button>

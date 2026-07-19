@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const saveTimeDisplay = document.getElementById('editLastSaveTime');
             if (nickInput) nickInput.value = save.nickname || '';
             if (emailDisplay) emailDisplay.innerText = currentUser ? currentUser.email : '未登录';
+            initCloudSaveTime();
             editModal.style.display = 'flex';
         });
     });
@@ -127,6 +128,18 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (editModal) editModal.style.display = 'none';
             alert('存档重置完成，页面即将刷新');
             location.reload();
+        });
+    }
+
+    // ★ 新增：上传存档按钮
+    const uploadSaveBtn = document.getElementById('uploadSaveBtn');
+    if (uploadSaveBtn) {
+        uploadSaveBtn.addEventListener('click', async function () {
+            if (typeof window.manualUploadSave === 'function') {
+                await window.manualUploadSave();
+            } else {
+                showToast('☁️ 上传功能未就绪', 2000);
+            }
         });
     }
 

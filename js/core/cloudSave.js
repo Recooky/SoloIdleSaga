@@ -341,3 +341,29 @@ window.syncCloudToLocal = async function() {
     console.log("☁️ 已从云端拉取存档覆盖本地");
     return true;
 };
+
+// ===== 手动上传存档（供账号设置弹窗的按钮调用） =====
+window.manualUploadSave = async function() {
+    if (!supabaseClient || !supabaseClient.auth) {
+        showToast('☁️ 云服务未就绪，无法上传', 2000);
+        return false;
+    }
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+        showToast('⚠️ 请先登录账号再上传', 2000);
+        return false;
+    }
+
+    // 上传前先停一下战斗（避免上传途中存档被改写），但可以不严格停下，因为同步只是一瞬间
+    // 直接调用内部上传
+    await syncLocalToCloudInternal();
+
+    // 更新弹窗中的最后云存档时间
+    const saveTimeEl = document.getElementById('editLastSaveTime');
+    if (saveTimeEl) {
+        saveTimeEl.innerText = new Date().toLocaleString();
+    }
+
+    showToast('☁️ 上传存档成功！', 2000);
+    return true;
+};

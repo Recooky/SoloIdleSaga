@@ -166,7 +166,7 @@ window.OTHER_ITEM_CONFIG = {
                 { type: 'gold', amount: 500 }
             ],
             random: [
-                { type: 'item', cfgId: 'soul_shard_medium', amount: 2, rate: 0.8 },
+                { type: 'item', cfgId: 'soul_shard_small', amount: 2, rate: 0.8 },
                 { type: 'item', cfgId: 'reform_stone_small', amount: 1, rate: 0.4 }
             ]
         }
@@ -236,7 +236,7 @@ window.OTHER_ITEM_CONFIG = {
                 { type: 'gold', amount: 1000 }
             ],
             random: [
-                { type: 'item', cfgId: 'soul_shard_large', amount: 2, rate: 0.8 },
+                { type: 'item', cfgId: 'soul_shard_medium', amount: 2, rate: 0.8 },
                 { type: 'item', cfgId: 'reform_stone_medium', amount: 1, rate: 0.4 }
             ]
         }
@@ -304,7 +304,7 @@ window.OTHER_ITEM_CONFIG = {
                 { type: 'gold', amount: 2000 }
             ],
             random: [
-                { type: 'item', cfgId: 'soul_shard_complete', amount: 2, rate: 0.8 },
+                { type: 'item', cfgId: 'soul_shard_large', amount: 2, rate: 0.8 },
                 { type: 'item', cfgId: 'reform_stone_large', amount: 1, rate: 0.4 }
             ]
         }
@@ -372,7 +372,7 @@ window.OTHER_ITEM_CONFIG = {
                 { type: 'gold', amount: 3000 }
             ],
             random: [
-                { type: 'item', cfgId: 'soul_shard_complete', amount: 3, rate: 0.8 },
+                { type: 'item', cfgId: 'soul_shard_complete', amount: 2, rate: 0.8 },
                 { type: 'item', cfgId: 'reform_stone_complete', amount: 1, rate: 0.4 }
             ]
         }

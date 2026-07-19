@@ -1,5 +1,5 @@
 // 全局版本号（用于自动更新校验）
-window.GAME_VERSION = "0.0.5";
+window.GAME_VERSION = "0.0.6";
 
 
 

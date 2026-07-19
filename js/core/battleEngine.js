@@ -225,7 +225,8 @@ function playerAttack() {
         currentMonster.def, 
         totalAttr.critRate, 
         totalAttr.critDmg,
-        totalAttr.penetrateDef || 0   // 新增：传入防御穿透
+        totalAttr.penetrateDef || 0,   // 新增：传入防御穿透
+        save.currentStage
     );
 
     // ★ 新增：元素伤害计算,假设怪物拥有抗性属性（暂为0，后续可配置）
@@ -247,10 +248,11 @@ function playerAttack() {
 
     // ====== 构建详细伤害日志 ======
     // 1. 物理伤害计算详情
-    const defReduce = getDefDamageReduce(effectiveDef);
+    const K = getDefKByStage(save.currentStage);                                          // ← 获取实际K值
+    const defReduce = getDefDamageReduce(effectiveDef, save.currentStage);                // ← 传入关卡
     const critPart = isCrit ? `(暴击倍率${(totalAttr.critDmg*100).toFixed(0)}%)` : '';
     let physDetail = `物理：攻击${totalAttr.atk.toFixed(1)}`;
-    physDetail += ` × 减伤${(1-defReduce).toFixed(2)}(1 - ${effectiveDef.toFixed(0)}/(${effectiveDef.toFixed(0)}+100)`;
+    physDetail += ` × 减伤${(1-defReduce).toFixed(2)}(1 - ${effectiveDef.toFixed(0)}/(${effectiveDef.toFixed(0)}+${K.toFixed(0)})`;  // ← 使用实际K值
     if (totalAttr.penetrateDef > 0) {
         physDetail += ` [穿透${(totalAttr.penetrateDef*100).toFixed(0)}%：防御${currentMonster.def}→${effectiveDef.toFixed(0)}]`;
     }
@@ -394,8 +396,13 @@ function monsterAttack() {
     triggerMonsterAttackAnim();
     triggerAttackEffect('monster');
 
+    // ===== 0. 计算怪物物理穿透 =====
+    const stage = getRegionByLevel(save.currentStage)?.stage || 1;
+    const monsterPenetrate = Math.min(0.50, (stage - 1) * 0.03);  //怪物物理穿透成长，上限50，按区域成长5%
+    const effectivePlayerDef = totalAttr.def * (1 - monsterPenetrate);
+
     // ===== 1. 物理伤害计算 =====
-    const reduce = getDefDamageReduce(totalAttr.def);
+    const reduce = getDefDamageReduce(effectivePlayerDef, save.currentStage);
     let physDamage = Math.floor(currentMonster.atk * (1 - reduce));
     physDamage = Math.max(0, physDamage);
 
@@ -425,9 +432,11 @@ function monsterAttack() {
     // 先输出简版结果
     addBattleLog(`【${currentMonster.name}】攻击你，造成 ${totalDamage} 点伤害(闪避率${(dodgeRate*100).toFixed(1)}%)`);
     // 4a. 物理伤害计算详情
-    const defReduce = getDefDamageReduce(totalAttr.def);
+    const K = getDefKByStage(save.currentStage);  // ← 获取K的实际值
+    const defReduce = getDefDamageReduce(effectivePlayerDef, save.currentStage);
     let physDetail = `物理：攻击${currentMonster.atk.toFixed(1)}`;
-    physDetail += ` × 减伤${(1 - defReduce).toFixed(2)}(1 - ${totalAttr.def.toFixed(0)}/(${totalAttr.def.toFixed(0)}+100))`;
+    physDetail += ` × 减伤${(1 - defReduce).toFixed(2)}[区域穿透${(monsterPenetrate*100).toFixed(0)}%]`;
+    physDetail += `(1 - ${effectivePlayerDef.toFixed(0)}/(${effectivePlayerDef.toFixed(0)}+${K.toFixed(0)}))`;  // ← 用实际K值替代
     physDetail += ` = ${physDamage}`;
     
 
@@ -558,16 +567,14 @@ function playerDie() {
 
 function nextWaveOrStage() {
     const save = getSaveData();
-    // 当前波数+1
     save.currentWave += 1;
-                // 5波打完通关
-    if (save.currentWave > 5) {
-        const clearedStage = save.currentStage; // 刚打通的关卡
 
-        // ====== 循环刷怪模式：记录通关但重置波次，不跳关 ======
+    // 5波打完通关
+    if (save.currentWave > 5) {
+        const clearedStage = save.currentStage;
+
         if (save.isLoopFarming) {
             save.currentWave = 1;
-            // 循环模式下也要更新最高通关记录（首次通关），解锁下一关让玩家可选
             if (!save.unlockData) {
                 save.unlockData = { maxDifficulty: 0, maxZone: 0, maxStage: 0 };
             }
@@ -579,42 +586,50 @@ function nextWaveOrStage() {
             }
             addBattleLog(`循环刷怪模式：第${save.currentStage}关所有波次已清空，继续挑战同一关卡！`);
         } else {
-            // ====== 原有跳关逻辑 ======
             save.currentStage += 1;
             save.currentWave = 1;
-            // 更新最高通关记录
             if (!save.unlockData) {
                 save.unlockData = { maxDifficulty: 0, maxZone: 0, maxStage: 0 };
             }
             if (clearedStage > save.unlockData.maxStage) {
                 save.unlockData.maxStage = clearedStage;
-                // 同步更新难度和区域
                 const ud = calcUnlockData(clearedStage);
                 save.unlockData.maxDifficulty = ud.diffIdx;
                 save.unlockData.maxZone = ud.zoneIdx;
             }
             addBattleLog(`恭喜通关第${clearedStage}关，自动挑战第${save.currentStage}关！`);
         }
-        // ✅ 将血量回满逻辑移到这里：仅在通关成功时执行
+
+        // 血量回满（在弹窗期间已经显示满血）
         const totalAttr = calcTotalAttr(save.baseAttr, save.equipWear);
         playerCurrentHp = totalAttr.hp;
         playerCurrentMp = totalAttr.mp;
         addBattleLog(`闯关成功，生命和魔力已完全恢复！`);
-        
-        // 刷新血条UI
         if (battleCallback) {
             battleCallback({ type: "refreshPlayerHp", data: playerCurrentHp });
             battleCallback({ type: "refreshPlayerMp", data: playerCurrentMp });
         }
+
+        setSaveData(save);
+        if (typeof renderStageGrid === 'function') {
+            renderStageGrid();
+        }
+
+        // ★ 显示通关弹窗，并传入回调：弹窗关闭后 spawnMonster
+        if (typeof showVictoryModal === 'function') {
+            showVictoryModal(() => {
+                spawnMonster();
+            });
+        } else {
+            // 兜底：如果 showVictoryModal 不可用，立即生成
+            spawnMonster();
+        }
+
+        return; // 不再执行函数底部逻辑
     }
+
+    // 非通关：正常波次，立即生怪
     setSaveData(save);
-    
-
-    // 通关后刷新关卡选择器（解锁新关卡、更新置灰状态）
-    if (typeof renderStageGrid === 'function') {
-        renderStageGrid();
-    }
-
     spawnMonster();
 }
 

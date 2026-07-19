@@ -752,3 +752,42 @@ function hideDeathModal() {
         window.deathCountdownTimer = null;
     }
 }
+
+// ===== 通关弹窗控制 =====
+function showVictoryModal(onClose) {
+    const modal = document.getElementById('victoryModal');
+    const countdownEl = document.getElementById('victoryCountdown');
+    if (!modal || !countdownEl) return;
+
+    let remaining = 3;
+    countdownEl.innerText = `${remaining}秒后自动进入下一关`;
+    modal.style.display = 'flex';
+
+    // 清除旧计时器
+    if (window.victoryCountdownTimer) {
+        clearInterval(window.victoryCountdownTimer);
+    }
+    window.victoryCountdownTimer = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+            clearInterval(window.victoryCountdownTimer);
+            window.victoryCountdownTimer = null;
+            modal.style.display = 'none';
+            // ★ 弹窗关闭后，如果有回调则执行
+            if (typeof onClose === 'function') {
+                onClose();
+            }
+        } else {
+            countdownEl.innerText = `${remaining}秒后自动进入下一关`;
+        }
+    }, 1000);
+}
+
+function hideVictoryModal() {
+    const modal = document.getElementById('victoryModal');
+    if (modal) modal.style.display = 'none';
+    if (window.victoryCountdownTimer) {
+        clearInterval(window.victoryCountdownTimer);
+        window.victoryCountdownTimer = null;
+    }
+}

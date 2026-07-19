@@ -777,15 +777,15 @@ window.ENHANCE_CONFIG = {
     // 这样同一阶同品质的装备强化消耗/收益相同
     boostConfig: {
         // 格式：level => { 属性增幅倍率（相对于装备原始基础属性） }
-        1: { baseMultiplier: 0.10 },   // +1: 增加5%
-        2: { baseMultiplier: 0.20 },
-        3: { baseMultiplier: 0.30 },
-        4: { baseMultiplier: 0.40 },
-        5: { baseMultiplier: 0.50 },
-        6: { baseMultiplier: 0.65 },
-        7: { baseMultiplier: 0.80 },
-        8: { baseMultiplier: 0.95 },
-        9: { baseMultiplier: 1.10 },
-        10: { baseMultiplier: 1.30 }
+        1: { baseMultiplier: 0.05 },   // +1: 增加5%
+        2: { baseMultiplier: 0.10 },
+        3: { baseMultiplier: 0.15 },
+        4: { baseMultiplier: 0.20 },
+        5: { baseMultiplier: 0.25 },
+        6: { baseMultiplier: 0.32 },
+        7: { baseMultiplier: 0.39 },
+        8: { baseMultiplier: 0.46 },
+        9: { baseMultiplier: 0.53 },
+        10: { baseMultiplier: 0.60 }
     }
 };

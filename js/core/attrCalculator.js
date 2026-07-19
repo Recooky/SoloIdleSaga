@@ -305,15 +305,28 @@ window.calcTotalAttr = function(baseAttr, wearEquips) {
         int: totalInt,
     };
 }
-
+/**
+ * 根据关卡获取防御减伤公式的 K 值
+ * 区域1（1~10关）K=700，之后每区增加350
+ * @param {number} level 当前关卡
+ * @returns {number} K 值
+ */
+window.getDefKByStage = function(level) {
+    const region = window.getRegionByLevel(level);
+    const baseK = 200;
+    if (!region) return baseK;
+    const stage = region.stage || 1;
+    return baseK + (stage - 1) * 2500;
+};
 /**
  * 护甲减伤计算
  * @param {number} def 防御值
  * @returns {number} 减伤比例
  */
-window.getDefDamageReduce = function(def) {
-    return def / (def + 100);
-}
+window.getDefDamageReduce = function(def, level) {
+    const K = window.getDefKByStage(level || 1);
+    return Math.min(0.75, def / (def + K));
+};
 
 /**
  * 计算单次攻击最终伤害
@@ -327,11 +340,10 @@ window.getDefDamageReduce = function(def) {
  * @param {number} elementPen 该元素穿透比例 (0~1)
  * @returns {number} 最终元素伤害
  */
-window.calcDamage = function(atk, def, critRate, critDmg, penetrateDef = 0){
-    // 防御穿透：按比例扣减防御，限制在 0~1 之间
+window.calcDamage = function(atk, def, critRate, critDmg, penetrateDef = 0, level = 1) {
     const penRate = Math.min(1, Math.max(0, penetrateDef || 0));
     const effectiveDef = Math.max(0, def * (1 - penRate));
-    const reduce = getDefDamageReduce(effectiveDef);
+    const reduce = getDefDamageReduce(effectiveDef, level);
     let isCrit = Math.random() <= critRate;
     let baseDmg = atk * (1 - reduce);
     if (isCrit) {
@@ -340,9 +352,9 @@ window.calcDamage = function(atk, def, critRate, critDmg, penetrateDef = 0){
     return {
         damage: Math.max(1, Math.floor(baseDmg)),
         isCrit,
-        effectiveDef   // 返回实际生效的防御值，方便战斗日志展示
+        effectiveDef
     };
-}
+};
 
 window.calcElementDamage = function(elementDmg, targetResist, elementPen) {
     if (elementDmg <= 0) return 0;
@@ -387,8 +399,6 @@ window.getMonsterAttrByLevel = function(level, wave) {
 };
 
 // 内部函数：使用指定品质索引生成怪物属性
-// 内部函数：使用指定品质索引生成怪物属性
-// 内部函数：使用指定品质索引生成怪物属性
 function getMonsterAttrByLevelWithQuality(level, wave, region, qualityIdx) {
     const pool = region.monstersByQuality[qualityIdx];
     if (!pool || pool.length === 0) {
@@ -397,13 +407,35 @@ function getMonsterAttrByLevelWithQuality(level, wave, region, qualityIdx) {
     }
 
     const monsterConfig = pool[Math.floor(Math.random() * pool.length)];
-    const GROWTH_RATE = 0.15; // 每关怪物成长增加指数 18%/关
-    const growMulti = Math.pow(1 + GROWTH_RATE, level - 1);
 
-    // 计算最终属性 = 配置基础值 × 关卡成长倍率
+    // ===== 攻击/HP 成长倍率（原公式） =====
+    const STAGE_GROWTH_MULTIPLIER = [1.0, 2.5, 6.0, 15, 35, 80, 180, 400, 900, 2000, 4500, 10000];
+    const INNER_GROWTH_RATE = 0.20;
+    const regionIndex = Math.min(11, Math.max(0, Math.ceil(level / 10) - 1));
+    const levelInRegion = ((level - 1) % 10) + 1;
+    const growMulti = STAGE_GROWTH_MULTIPLIER[regionIndex] * Math.pow(1 + INNER_GROWTH_RATE, levelInRegion - 1);
+
+    // ===== 防御成长倍率（攻击成长的 8%） =====
+    const STAGE_DEF_MULTIPLIER = [
+        0.15,     // 1区
+        0.40,     // 2区
+        0.90,     // 3区
+        2.0,      // 4区
+        3.5,      // 5区
+        5.5,      // 6区
+        7.0,     // 7区
+        9.0,       // 8区
+        11.0,       // 9区
+        13.0,      // 10区
+        15.0,      // 11区
+        17.0       // 12区
+    ];
+    const defGrowMulti = STAGE_DEF_MULTIPLIER[regionIndex] * Math.pow(1 + INNER_GROWTH_RATE, levelInRegion - 1);
+
+    // 计算最终属性
     const hp  = Math.floor(monsterConfig.hp * growMulti);
     const atk = parseFloat((monsterConfig.atk * growMulti).toFixed(2));
-    const def = parseFloat((monsterConfig.def * growMulti).toFixed(2));
+    const def = parseFloat((monsterConfig.def * defGrowMulti).toFixed(2));   // ★ 使用 defGrowMulti
     const dodge = Math.floor(monsterConfig.dodge * growMulti);
     const hit   = Math.floor(monsterConfig.hit * growMulti);
 
